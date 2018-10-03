@@ -2,9 +2,9 @@
 
 ## Expectations from the interns
 
-- [ ] Weekly Meetings will be held to understand the progress of each student
+- [X] Weekly Meetings will be held to understand the progress of each student
 
-- [ ] Weekly **progress report**
+- [X] Weekly **progress report**
 
 - [ ] End of the semester expected **report** and **presentation**
 
