@@ -6,7 +6,7 @@
 
 - [X] Weekly **progress report**
 
-- [ ] End of the semester expected **report** and **presentation**
+- [ ] End of the semester expected **report** and **presentation** (Due 12/15)
 
 
 ## Adaptive Complex Networks
