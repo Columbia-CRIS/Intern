@@ -108,6 +108,9 @@ def robustness(g):
     # New metric
     # return sum(strucR)
 
+# Calculates the structural of a graph using NetworkX functions
+# Input: A graph
+# Output: The robustness value
 def nx_robustness(g):
     strucR = [0] * g.n # Structural robustness with respect to each node
 
