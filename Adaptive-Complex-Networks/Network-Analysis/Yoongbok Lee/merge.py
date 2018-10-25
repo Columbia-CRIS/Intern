@@ -70,13 +70,17 @@ def cont_all_cliques_iterative(G, min_clique_node=4):
     return G
 
 
-def cont_all_stars_iterative(G, min_neighbors=4):
+def cont_all_stars_iterative(G, min_neighbors=10):
     neighbor = {}
     print(len(G))
     result = G
     for node in G:
-        if len(list(nx.all_neighbors(result,node))) > min_neighbors:
-            neighbor[node] = list(nx.all_neighbors(result, node))
+        try:
+            neighbors = list(nx.all_neighbors(result, node))
+        except nx.exception.NetworkXError:
+            continue
+        if len(neighbors) > min_neighbors:
+            neighbor[node] = neighbors
             result = contract_star(result, node)
             result = nx.convert_node_labels_to_integers(result)
     return result
@@ -86,6 +90,7 @@ def cont_all_cliques(G, min_clique_node=4):
     new = G
     cliques = list(nx.algorithms.find_cliques(G))
     cliques.sort(key=len, reverse=True)
+    print(cliques)
     for clique in cliques:
         if len(clique) < min_clique_node:
             break
@@ -93,7 +98,7 @@ def cont_all_cliques(G, min_clique_node=4):
             for c in cliques:
                 if node in c and c != clique:
                     cliques.remove(c)
-            new = contract_clique(new, clique)
+        new = contract_clique(new, clique)
     return new
 
 
@@ -103,8 +108,12 @@ def contract_clique(G, clique):
     center = clique[rand]
     clique.remove(center)
     for node in clique:
-        print(center, node)
-        new = nx.contracted_nodes(G, center, node)
+        # print(center, node)
+        try:
+            new = nx.contracted_nodes(G, center, node)
+        except nx.exception.NetworkXError:
+            print("error")
+            print(center, node)
     return new
 
 
@@ -157,7 +166,7 @@ if __name__ == "__main__":
     plt.axis('off')
     plt.show()
 
-    G2 = cont_all_cliques_iterative(G, 4)
+    G2 = cont_all_cliques_iterative(G, 5)
     print(G2.number_of_edges())
     G2 = nx.convert_node_labels_to_integers(G2)
 
@@ -195,7 +204,7 @@ if __name__ == "__main__":
     # for c in (nx.algorithms.community.k_clique_communities(G,2)):
     #     print(c)
 
-    G3 = cont_all_cliques(G, 4)
+    G3 = cont_all_cliques(G, 3)
     print(G3.number_of_edges())
     G3 = nx.convert_node_labels_to_integers(G3)
 
@@ -223,7 +232,7 @@ if __name__ == "__main__":
     plt.axis('off')
     plt.show()
 
-    G4 = cont_all_stars_iterative(G, 6)
+    G4 = cont_all_stars_iterative(G, 15)
     print(G4.number_of_edges())
     G4 = nx.convert_node_labels_to_integers(G4)
 
