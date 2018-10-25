@@ -4,6 +4,7 @@ import random
 
 
 def random_color():
+    """selecting random color in hex"""
     hex_digits = [0,0,0,0,0,0]
     for i in range(len(hex_digits)):
         hex_digits[i] = random.randint(0,15)
@@ -16,7 +17,7 @@ def random_color():
 
 
 def color_cliques(G, min_node_num=3):
-    """hubs(cliques) are all complete subgraphs of G"""
+    """hubs(cliques) are complete subgraphs of G"""
     p = dict(nx.single_source_shortest_path_length(G, ncenter))
     cliques = list(nx.algorithms.clique.find_cliques(G))
     for v in p:
@@ -58,21 +59,33 @@ def color_neighbors(G):
     return p
 
 
-def cont_all_cliques(G, min_clique_node=3, iterative=True):
+def cont_all_cliques_iterative(G, min_clique_node=3):
     cliques = list(nx.algorithms.find_cliques(G))
     cliques.sort(key=len, reverse=True)
     while len(cliques[0]) > min_clique_node:
         clique = cliques[0]
-        if iterative:
-            G = contract_clique_iterative(G, clique)
-        else:
-            G = contract_clique(G, clique)
+        G = contract_clique(G, clique)
         cliques = list(nx.algorithms.find_cliques(G))
         cliques.sort(key=len, reverse=True)
     return G
 
 
-def contract_clique_iterative(G, clique):
+def cont_all_cliques(G, min_clique_node=3):
+    new = G
+    cliques = list(nx.algorithms.find_cliques(G))
+    cliques.sort(key=len, reverse=True)
+    for clique in cliques:
+        if len(clique) < min_clique_node:
+            break
+        for node in clique:
+            for c in cliques:
+                if node in c and c != clique:
+                    cliques.remove(c)
+        new = contract_clique(new, clique)
+    return new
+
+
+def contract_clique(G, clique):
     new = G
     rand = random.randint(0,len(clique)-1)
     center = clique[rand]
@@ -80,10 +93,6 @@ def contract_clique_iterative(G, clique):
     for node in clique:
         new = nx.contracted_nodes(G, center, node)
     return new
-
-
-def contract_clique(G,clique):
-    new = G
 
 
 if __name__ == "__main__":
@@ -128,10 +137,11 @@ if __name__ == "__main__":
     plt.axis('off')
     plt.show()
 
-    G = cont_all_cliques(G,4)
-    G = nx.convert_node_labels_to_integers(G)
+    G2 = cont_all_cliques_iterative(G, 4)
+    print(G2.number_of_edges())
+    G2 = nx.convert_node_labels_to_integers(G2)
 
-    pos = nx.get_node_attributes(G, 'pos')
+    pos = nx.get_node_attributes(G2, 'pos')
     dmin = 1
     ncenter = 0
     for n in pos:
@@ -140,12 +150,12 @@ if __name__ == "__main__":
         if d < dmin:
             ncenter = n
             dmin = d
-    p = color_cliques(G,4)
+    p = color_cliques(G2,4)
 
     plt.figure(2,figsize=(8, 8))
     plt.subplot()
-    nx.draw_networkx_edges(G, pos, nodelist=[ncenter], alpha=0.5)
-    nx.draw_networkx_nodes(G, pos, nodelist=list(p.keys()),
+    nx.draw_networkx_edges(G2, pos, nodelist=[ncenter], alpha=0.5)
+    nx.draw_networkx_nodes(G2, pos, nodelist=list(p.keys()),
                            node_size=30,
                            node_color=list(p.values()),
                            cmap=plt.cm.Reds_r)
@@ -164,3 +174,31 @@ if __name__ == "__main__":
     # print(nx.attr_matrix(G))
     # for c in (nx.algorithms.community.k_clique_communities(G,2)):
     #     print(c)
+
+    G3 = cont_all_cliques(G, 4)
+    print(G3.number_of_edges())
+    G3 = nx.convert_node_labels_to_integers(G3)
+
+    pos = nx.get_node_attributes(G3, 'pos')
+    dmin = 1
+    ncenter = 0
+    for n in pos:
+        x, y = pos[n]
+        d = (x - 0.5) ** 2 + (y - 0.5) ** 2
+        if d < dmin:
+            ncenter = n
+            dmin = d
+    p = color_cliques(G3, 4)
+
+    plt.figure(3, figsize=(8, 8))
+    plt.subplot()
+    nx.draw_networkx_edges(G3, pos, nodelist=[ncenter], alpha=0.5)
+    nx.draw_networkx_nodes(G3, pos, nodelist=list(p.keys()),
+                           node_size=30,
+                           node_color=list(p.values()),
+                           cmap=plt.cm.Reds_r)
+    # nx.draw_networkx(G,pos)
+    plt.xlim(-0.05, 1.05)
+    plt.ylim(-0.05, 1.05)
+    plt.axis('off')
+    plt.show()
