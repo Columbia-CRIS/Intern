@@ -9,6 +9,7 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as savefig
 import matplotlib.pyplot as plt
+import time
 
 def show_graph_with_labels(adjacency_matrix):
     gr = nx.from_numpy_matrix(np.matrix(adjacency_matrix))
@@ -92,7 +93,6 @@ def perfect(n):
 
     g = Graph(n, n, True, False)
     for i in range(half):
-        print(i, i + half)
         g.adj[i][i + half] = 1
         g.adj[i + half][i] = 1
 
@@ -137,7 +137,7 @@ def star(n):
         g.adj[0][i] = 1
     return g
 
-g = star(30)
+# g = star(30)
 # for r in range(g.n):
     # neighbors = 0
     # for c in range(g.n):
@@ -157,12 +157,33 @@ g = star(30)
     #     g.adj[i][29] = 1
     #     g.adj[29][i] = 1
 
+
+### NetworkX is a lot faster for efficiency
+# g = perfect(30)
+# start = time.time()
 # print("Eff", evaluator.efficiency(g))
-# print("Rob", evaluator.robustness(g))
+# end = time.time()
+# print(end - start)
+#
+# start = time.time()
+# print("Nx Eff", evaluator.nx_efficiency(g))
+# end = time.time()
+# print(end - start)
 
-# print(evaluator.evaluate(g, 0.7))
+### NetworkX is a lot slower for robustness
+g = pent(30)
+start = time.time()
+print("Rob", evaluator.robustness(g))
+end = time.time()
+print(end - start)
 
-show_graph_with_labels(g.adj)
+start = time.time()
+print("Nx Rob", evaluator.nx_robustness(g))
+end = time.time()
+print(end - start)
+
+
+# show_graph_with_labels(g.adj)
 # he = '/Users/Jackson/Documents/School/research/genetic/img/'
 # for filename in os.listdir('/Users/Jackson/Documents/School/research/genetic/img'):
 #     lol = filename.split('.')
