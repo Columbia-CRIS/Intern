@@ -45,7 +45,7 @@ def color_neighbors(G):
     """possibility of robustness loss"""
     p = dict(nx.single_source_shortest_path_length(G, ncenter))
     neighbor = {}
-    print(len(G))
+
     for node in G:
         neighbor[node] = list(nx.all_neighbors(G, node))
     for value in neighbor:
@@ -59,7 +59,7 @@ def color_neighbors(G):
     return p
 
 
-def cont_all_cliques_iterative(G, min_clique_node=3):
+def cont_all_cliques_iterative(G, min_clique_node=4):
     cliques = list(nx.algorithms.find_cliques(G))
     cliques.sort(key=len, reverse=True)
     while len(cliques[0]) > min_clique_node:
@@ -70,7 +70,19 @@ def cont_all_cliques_iterative(G, min_clique_node=3):
     return G
 
 
-def cont_all_cliques(G, min_clique_node=3):
+def cont_all_stars_iterative(G, min_neighbors=4):
+    neighbor = {}
+    print(len(G))
+    result = G
+    for node in G:
+        if len(list(nx.all_neighbors(result,node))) > min_neighbors:
+            neighbor[node] = list(nx.all_neighbors(result, node))
+            result = contract_star(result, node)
+            result = nx.convert_node_labels_to_integers(result)
+    return result
+
+
+def cont_all_cliques(G, min_clique_node=4):
     new = G
     cliques = list(nx.algorithms.find_cliques(G))
     cliques.sort(key=len, reverse=True)
@@ -81,18 +93,26 @@ def cont_all_cliques(G, min_clique_node=3):
             for c in cliques:
                 if node in c and c != clique:
                     cliques.remove(c)
-        new = contract_clique(new, clique)
+            new = contract_clique(new, clique)
     return new
 
 
 def contract_clique(G, clique):
     new = G
-    rand = random.randint(0,len(clique)-1)
+    rand = random.randint(0, len(clique)-1)
     center = clique[rand]
     clique.remove(center)
     for node in clique:
+        print(center, node)
         new = nx.contracted_nodes(G, center, node)
     return new
+
+
+def contract_star(G, center):
+    result = G
+    for node in nx.all_neighbors(G, center):
+        result = nx.contracted_nodes(result, center, node)
+    return result
 
 
 if __name__ == "__main__":
@@ -194,6 +214,34 @@ if __name__ == "__main__":
     plt.subplot()
     nx.draw_networkx_edges(G3, pos, nodelist=[ncenter], alpha=0.5)
     nx.draw_networkx_nodes(G3, pos, nodelist=list(p.keys()),
+                           node_size=30,
+                           node_color=list(p.values()),
+                           cmap=plt.cm.Reds_r)
+    # nx.draw_networkx(G,pos)
+    plt.xlim(-0.05, 1.05)
+    plt.ylim(-0.05, 1.05)
+    plt.axis('off')
+    plt.show()
+
+    G4 = cont_all_stars_iterative(G, 6)
+    print(G4.number_of_edges())
+    G4 = nx.convert_node_labels_to_integers(G4)
+
+    pos = nx.get_node_attributes(G4, 'pos')
+    dmin = 1
+    ncenter = 0
+    for n in pos:
+        x, y = pos[n]
+        d = (x - 0.5) ** 2 + (y - 0.5) ** 2
+        if d < dmin:
+            ncenter = n
+            dmin = d
+    p = color_cliques(G4, 4)
+
+    plt.figure(4, figsize=(8, 8))
+    plt.subplot()
+    nx.draw_networkx_edges(G4, pos, nodelist=[ncenter], alpha=0.5)
+    nx.draw_networkx_nodes(G4, pos, nodelist=list(p.keys()),
                            node_size=30,
                            node_color=list(p.values()),
                            cmap=plt.cm.Reds_r)
