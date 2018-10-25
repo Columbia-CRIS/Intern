@@ -72,7 +72,6 @@ def cont_all_cliques_iterative(G, min_clique_node=4):
 
 def cont_all_stars_iterative(G, min_neighbors=10):
     neighbor = {}
-    print(len(G))
     result = G
     for node in G:
         try:
@@ -90,7 +89,6 @@ def cont_all_cliques(G, min_clique_node=4):
     new = G
     cliques = list(nx.algorithms.find_cliques(G))
     cliques.sort(key=len, reverse=True)
-    print(cliques)
     for clique in cliques:
         if len(clique) < min_clique_node:
             break
@@ -128,7 +126,7 @@ if __name__ == "__main__":
     my_float = 0.003
     this_float = 0.1
     G = nx.random_geometric_graph(500, this_float)
-    print(G.number_of_edges())
+    print("original # of edges:", G.number_of_edges())
     # position is stored as node attribute data for random_geometric_graph
     pos = nx.get_node_attributes(G, 'pos')
     G2 = nx.random_geometric_graph(200, this_float)
@@ -140,7 +138,6 @@ if __name__ == "__main__":
         G2 = nx.random_geometric_graph(200,this_float)
     """
     print(nx.number_connected_components(G), "connected components")
-    print(this_float)
     # find node near center (0.5,0.5)
     dmin = 1
     ncenter = 0
@@ -167,7 +164,7 @@ if __name__ == "__main__":
     plt.show()
 
     G2 = cont_all_cliques_iterative(G, 5)
-    print(G2.number_of_edges())
+    print("# of edges G2:", G2.number_of_edges())
     G2 = nx.convert_node_labels_to_integers(G2)
 
     pos = nx.get_node_attributes(G2, 'pos')
@@ -205,7 +202,7 @@ if __name__ == "__main__":
     #     print(c)
 
     G3 = cont_all_cliques(G, 3)
-    print(G3.number_of_edges())
+    print("# of edges G3:", G3.number_of_edges())
     G3 = nx.convert_node_labels_to_integers(G3)
 
     pos = nx.get_node_attributes(G3, 'pos')
@@ -233,7 +230,7 @@ if __name__ == "__main__":
     plt.show()
 
     G4 = cont_all_stars_iterative(G, 15)
-    print(G4.number_of_edges())
+    print("# of edges G4", G4.number_of_edges())
     G4 = nx.convert_node_labels_to_integers(G4)
 
     pos = nx.get_node_attributes(G4, 'pos')
