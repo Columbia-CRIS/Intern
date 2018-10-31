@@ -9,6 +9,7 @@ to setup
   set num-bars num-levels;;100
   set count-num-agents n-values num-levels [0]
   set index-list [0 1 2 3 4]
+
   set N-list (list N-0 N-1 N-2 N-3 N-4)
   set alpha-list (list alpha-0 alpha-1 alpha-2 alpha-3 alpha-4)
   set beta-list (list beta-0 beta-1 beta-2 beta-3 beta-4)
