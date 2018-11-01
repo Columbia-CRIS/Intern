@@ -1,5 +1,5 @@
-turtles-own [level level-next alpha beta gamma class payoff]
-globals [count-levels-list count-levels-combined num-bars count-num-agents index-list switch-list N-list alpha-list beta-list gamma-list]
+turtles-own [level level-next alpha beta gamma class payoff loss]
+globals [count-levels-list count-levels-combined num-bars count-num-agents count-num-agents-old index-list switch-list N-list alpha-list beta-list gamma-list turtle-count]
 
 ;; Basic functions
 
@@ -8,12 +8,14 @@ to setup
 
   set num-bars num-levels;;100
   set count-num-agents n-values num-levels [0]
-  set index-list [0 1 2 3 4]
+  set count-num-agents-old n-values num-levels [0]
 
+  set index-list [0 1 2 3 4]
   set N-list (list N-0 N-1 N-2 N-3 N-4)
   set alpha-list (list alpha-0 alpha-1 alpha-2 alpha-3 alpha-4)
   set beta-list (list beta-0 beta-1 beta-2 beta-3 beta-4)
   set gamma-list (list gamma-0 gamma-1 gamma-2 gamma-3 gamma-4)
+  set turtle-count 0
 
   set count-levels-combined []
 
@@ -113,9 +115,7 @@ end
 
 to imitate
   ask turtles[
-
-
-
+    set turtle-count (turtle-count + 1)
 
     ;; pick a random salary level
     let level-target 1 + random num-levels
@@ -138,19 +138,37 @@ to imitate
     let payoff-self alpha * (ln s-self) - beta * (ln s-self) ^ 2 - gamma * (ln num-self)
     set payoff payoff-self
 
+    ;; using a smooth curve for decision making
     let diff (payoff-target - payoff-self)
-    let exp_s 1.0
-    let exp_mu 2.0
+    let exp_s 2.0
+    let exp_mu 5.0
     let cdf ((1.0 / (1.0 + exp((exp_mu - diff) / exp_s))) * 100000)
     let exp_random random 100000
 
-    if cdf > exp_random [
+    ;if diff > 0 [
+    ;;if cdf > exp_random and diff > 0 [
       leave-level
       set level level-target
       enter-level
       set payoff payoff-target
-      ]
     ]
+
+    ;; check periodically for convergence rate
+    let turtle-count-interval 10000
+    if turtle-count mod turtle-count-interval = 0 [
+      set loss 0
+      let indexer ( range 0 length count-num-agents )
+
+      foreach indexer [ ind ->
+        let cur1 item ind count-num-agents
+        let cur2 item ind count-num-agents-old
+        set loss (loss + (cur1 - cur2) ^ 2)
+      ]
+      show loss
+
+      set count-num-agents-old count-num-agents
+    ]
+  ]
 end
 
 to leave-level
@@ -294,7 +312,7 @@ INPUTBOX
 87
 124
 num-agents
-0.0
+10000.0
 1
 0
 Number
@@ -305,7 +323,7 @@ INPUTBOX
 283
 125
 s-min
-0.0
+20000.0
 1
 0
 Number
@@ -316,7 +334,7 @@ INPUTBOX
 365
 126
 s-max
-0.0
+3000000.0
 1
 0
 Number
@@ -327,7 +345,7 @@ INPUTBOX
 167
 124
 num-levels
-0.0
+100.0
 1
 0
 Number
@@ -400,7 +418,7 @@ INPUTBOX
 468
 124
 go-until
-0.0
+100.0
 1
 0
 Number
@@ -411,7 +429,7 @@ INPUTBOX
 98
 193
 N-0
-0.0
+0.95
 1
 0
 Number
@@ -422,7 +440,7 @@ INPUTBOX
 189
 194
 N-1
-0.0
+0.05
 1
 0
 Number
@@ -466,7 +484,7 @@ INPUTBOX
 98
 255
 alpha-0
-0.0
+93.4
 1
 0
 Number
@@ -477,7 +495,7 @@ INPUTBOX
 188
 255
 alpha-1
-0.0
+95.8
 1
 0
 Number
@@ -488,7 +506,7 @@ INPUTBOX
 283
 257
 alpha-2
-0.0
+100.0
 1
 0
 Number
@@ -499,7 +517,7 @@ INPUTBOX
 376
 258
 alpha-3
-0.0
+100.0
 1
 0
 Number
@@ -510,7 +528,7 @@ INPUTBOX
 469
 260
 alpha-4
-0.0
+100.0
 1
 0
 Number
@@ -521,7 +539,7 @@ INPUTBOX
 98
 318
 beta-0
-0.0
+3.87
 1
 0
 Number
@@ -532,7 +550,7 @@ INPUTBOX
 187
 318
 beta-1
-0.0
+3.67
 1
 0
 Number
@@ -543,7 +561,7 @@ INPUTBOX
 281
 319
 beta-2
-0.0
+4.0
 1
 0
 Number
@@ -554,7 +572,7 @@ INPUTBOX
 376
 321
 beta-3
-0.0
+4.0
 1
 0
 Number
@@ -565,7 +583,7 @@ INPUTBOX
 468
 323
 beta-4
-0.0
+4.0
 1
 0
 Number
@@ -576,7 +594,7 @@ INPUTBOX
 99
 380
 gamma-0
-0.0
+2.17
 1
 0
 Number
@@ -587,7 +605,7 @@ INPUTBOX
 187
 380
 gamma-1
-0.0
+4.34
 1
 0
 Number
@@ -598,7 +616,7 @@ INPUTBOX
 279
 382
 gamma-2
-0.0
+5.0
 1
 0
 Number
@@ -609,7 +627,7 @@ INPUTBOX
 374
 383
 gamma-3
-0.0
+5.0
 1
 0
 Number
@@ -620,7 +638,7 @@ INPUTBOX
 470
 385
 gamma-4
-0.0
+5.0
 1
 0
 Number
