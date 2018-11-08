@@ -1,5 +1,5 @@
-turtles-own [level level-next alpha beta gamma class payoff]
-globals [count-levels-list count-levels-combined num-bars count-num-agents index-list switch-list N-list alpha-list beta-list gamma-list]
+turtles-own [level level-next alpha beta gamma class payoff loss]
+globals [count-levels-list count-levels-combined num-bars count-num-agents count-num-agents-old index-list switch-list N-list alpha-list beta-list gamma-list turtle-count]
 
 ;; Basic functions
 
@@ -8,11 +8,14 @@ to setup
 
   set num-bars num-levels;;100
   set count-num-agents n-values num-levels [0]
+  set count-num-agents-old n-values num-levels [0]
+
   set index-list [0 1 2 3 4]
   set N-list (list N-0 N-1 N-2 N-3 N-4)
   set alpha-list (list alpha-0 alpha-1 alpha-2 alpha-3 alpha-4)
   set beta-list (list beta-0 beta-1 beta-2 beta-3 beta-4)
   set gamma-list (list gamma-0 gamma-1 gamma-2 gamma-3 gamma-4)
+  set turtle-count 0
 
   set count-levels-combined []
 
@@ -112,9 +115,7 @@ end
 
 to imitate
   ask turtles[
-
-
-
+    set turtle-count (turtle-count + 1)
 
     ;; pick a random salary level
     let level-target 1 + random num-levels
@@ -136,14 +137,38 @@ to imitate
     let payoff-target alpha * (ln s-target) - beta * (ln s-target) ^ 2 - gamma * (ln (num-target + 1 / num-agents))
     let payoff-self alpha * (ln s-self) - beta * (ln s-self) ^ 2 - gamma * (ln num-self)
     set payoff payoff-self
-    if payoff-target > payoff-self [
+
+    ;; using a smooth curve for decision making
+    let diff (payoff-target - payoff-self)
+    let exp_s 2.0
+    let exp_mu 5.0
+    let cdf ((1.0 / (1.0 + exp((exp_mu - diff) / exp_s))) * 100000)
+    let exp_random random 100000
+
+    if diff > 0 [
+    ;;if cdf > exp_random and diff > 0 [
       leave-level
       set level level-target
       enter-level
       set payoff payoff-target
-      ]
-
     ]
+
+    ;; check periodically for convergence rate
+    let turtle-count-interval 10000
+    if turtle-count mod turtle-count-interval = 0 [
+      set loss 0
+      let indexer ( range 0 length count-num-agents )
+
+      foreach indexer [ ind ->
+        let cur1 item ind count-num-agents
+        let cur2 item ind count-num-agents-old
+        set loss (loss + (cur1 - cur2) ^ 2)
+      ]
+      show loss
+
+      set count-num-agents-old count-num-agents
+    ]
+  ]
 end
 
 to leave-level
@@ -1023,7 +1048,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
