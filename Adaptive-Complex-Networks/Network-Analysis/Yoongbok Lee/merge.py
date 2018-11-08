@@ -89,14 +89,16 @@ def cont_all_cliques(G, min_clique_node=4):
     new = G
     cliques = list(nx.algorithms.find_cliques(G))
     cliques.sort(key=len, reverse=True)
-    for clique in cliques:
-        if len(clique) < min_clique_node:
-            break
+    while len(cliques[0]) >= min_clique_node:
+        clique = cliques[0]
         for node in clique:
             for c in cliques:
                 if node in c and c != clique:
-                    cliques.remove(c)
+                    c.remove(node)
+                    # cliques.remove(c)
         new = contract_clique(new, clique)
+        cliques.remove(cliques[0])
+        cliques.sort(key=len, reverse=True)
     return new
 
 
@@ -109,8 +111,8 @@ def contract_clique(G, clique):
         # print(center, node)
         try:
             new = nx.contracted_nodes(G, center, node)
-        except nx.exception.NetworkXError:
-            print("error")
+        except nx.exception.NetworkXError as e:
+            print("error: ", e)
             print(center, node)
     return new
 
@@ -127,6 +129,7 @@ if __name__ == "__main__":
     this_float = 0.1
     G = nx.random_geometric_graph(500, this_float)
     print("original # of edges:", G.number_of_edges())
+    print("original # of nodes:", G.number_of_nodes())
     # position is stored as node attribute data for random_geometric_graph
     pos = nx.get_node_attributes(G, 'pos')
     G2 = nx.random_geometric_graph(200, this_float)
@@ -165,6 +168,7 @@ if __name__ == "__main__":
 
     G2 = cont_all_cliques_iterative(G, 5)
     print("# of edges G2:", G2.number_of_edges())
+    print("# of nodes G2: ", G2.number_of_nodes())
     G2 = nx.convert_node_labels_to_integers(G2)
 
     pos = nx.get_node_attributes(G2, 'pos')
@@ -203,7 +207,9 @@ if __name__ == "__main__":
 
     G3 = cont_all_cliques(G, 3)
     print("# of edges G3:", G3.number_of_edges())
+    print("# of nodes G3: ", G3.number_of_nodes())
     G3 = nx.convert_node_labels_to_integers(G3)
+    # print(G3.number_of_nodes())
 
     pos = nx.get_node_attributes(G3, 'pos')
     dmin = 1
@@ -229,8 +235,9 @@ if __name__ == "__main__":
     plt.axis('off')
     plt.show()
 
-    G4 = cont_all_stars_iterative(G, 15)
+    G4 = cont_all_stars_iterative(G, 20)
     print("# of edges G4", G4.number_of_edges())
+    print("# of nodes G4: ", G4.number_of_nodes())
     G4 = nx.convert_node_labels_to_integers(G4)
 
     pos = nx.get_node_attributes(G4, 'pos')
