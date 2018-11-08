@@ -16,7 +16,7 @@ def random_color():
     return result
 
 
-def color_cliques(G, ncenter, min_node_num=3):
+def color_cliques(G, min_node_num=3):
     """hubs(cliques) are complete subgraphs of G"""
     p_list = list(G.nodes)
     p = {}
@@ -147,7 +147,7 @@ def draw_graph(G):
             ncenter = n
             dmin = d
 
-    p = color_cliques(G, ncenter)
+    p = color_cliques(G)
 
     plt.figure(1,figsize=(8, 8))
     plt.subplot()
@@ -163,6 +163,7 @@ def draw_graph(G):
     plt.show()
 
     return ncenter
+
 
 if __name__ == "__main__":
     G = nx.random_geometric_graph(500, 0.1)
