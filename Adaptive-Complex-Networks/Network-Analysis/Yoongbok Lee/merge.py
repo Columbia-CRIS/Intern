@@ -18,11 +18,12 @@ def random_color():
 
 def color_cliques(G, ncenter, min_node_num=3):
     """hubs(cliques) are complete subgraphs of G"""
-    p = dict(nx.single_source_shortest_path_length(G, ncenter))
+    p_list = list(G.nodes)
+    p = {}
+    for thing in p_list:
+        p[thing] = "#DDDDDD"
+
     cliques = list(nx.algorithms.clique.find_cliques(G))
-    for v in p:
-        # default color is blue
-        p[v] = '#DDDDDD'
     # order cliques in descending order depending on size
     cliques.sort(key=len, reverse=True)
 
@@ -70,21 +71,6 @@ def cont_all_cliques_iterative(G, min_clique_node=4):
     return G
 
 
-def cont_all_stars_iterative(G, min_neighbors=10):
-    neighbor = {}
-    result = G
-    for node in G:
-        try:
-            neighbors = list(nx.all_neighbors(result, node))
-        except nx.exception.NetworkXError:
-            continue
-        if len(neighbors) > min_neighbors:
-            neighbor[node] = neighbors
-            result = contract_star(result, node)
-            result = nx.convert_node_labels_to_integers(result)
-    return result
-
-
 def cont_all_cliques(G, min_clique_node=4):
     new = G
     cliques = list(nx.algorithms.find_cliques(G))
@@ -100,6 +86,21 @@ def cont_all_cliques(G, min_clique_node=4):
         cliques.remove(cliques[0])
         cliques.sort(key=len, reverse=True)
     return new
+
+
+def cont_all_stars_iterative(G, min_neighbors=10):
+    neighbor = {}
+    result = G
+    for node in G:
+        try:
+            neighbors = list(nx.all_neighbors(result, node))
+        except nx.exception.NetworkXError:
+            continue
+        if len(neighbors) > min_neighbors:
+            neighbor[node] = neighbors
+            result = contract_star(result, node)
+            result = nx.convert_node_labels_to_integers(result)
+    return result
 
 
 def contract_clique(G, clique):
@@ -164,79 +165,21 @@ def draw_graph(G):
     return ncenter
 
 if __name__ == "__main__":
-    my_float = 0.003
-    this_float = 0.1
-    G = nx.random_geometric_graph(500, this_float)
+    G = nx.random_geometric_graph(500, 0.1)
+    print(G.nodes)
     draw_graph(G)
 
-    G2 = cont_all_cliques_iterative(G, 5)
+    G_c = G
+    print(G_c.nodes)
+    G2 = cont_all_cliques_iterative(G_c, 5)
     ncenter = draw_graph(G2)
-    # print(nx.clustering(G))
-    # print(list(nx.algorithms.clique.find_cliques(G)))
-    # print(mylist[:10])
-    # print(nx.nodes(G)[0])
-    # for c in list(nx.algorithms.clique.find_cliques(G)):
-    #     if len(c) > 3:
-    #         print(c,end=' ')
-    # print(nx.attr_matrix(G))
-    # for c in (nx.algorithms.community.k_clique_communities(G,2)):
-    #     print(c)
 
-    G3 = cont_all_cliques(G, 3)
-    print("# of edges G3:", G3.number_of_edges())
-    print("# of nodes G3: ", G3.number_of_nodes())
-    # G3 = nx.convert_node_labels_to_integers(G3)
-    # print(G3.number_of_nodes())
+    G_c = G
+    print(G_c.nodes)
+    G3 = cont_all_cliques(G_c, 3)
+    draw_graph(G3)
 
-    pos = nx.get_node_attributes(G3, 'pos')
-    dmin = 1
-    ncenter = 0
-    for n in pos:
-        x, y = pos[n]
-        d = (x - 0.5) ** 2 + (y - 0.5) ** 2
-        if d < dmin:
-            ncenter = n
-            dmin = d
-    p = color_cliques(G3, 4)
-
-    plt.figure(3, figsize=(8, 8))
-    plt.subplot()
-    nx.draw_networkx_edges(G3, pos, nodelist=[ncenter], alpha=0.5)
-    nx.draw_networkx_nodes(G3, pos, nodelist=list(p.keys()),
-                           node_size=30,
-                           node_color=list(p.values()),
-                           cmap=plt.cm.Reds_r)
-    # nx.draw_networkx(G,pos)
-    plt.xlim(-0.05, 1.05)
-    plt.ylim(-0.05, 1.05)
-    plt.axis('off')
-    plt.show()
-
-    G4 = cont_all_stars_iterative(G, 20)
-    print("# of edges G4", G4.number_of_edges())
-    print("# of nodes G4: ", G4.number_of_nodes())
-    # G4 = nx.convert_node_labels_to_integers(G4)
-
-    pos = nx.get_node_attributes(G4, 'pos')
-    dmin = 1
-    ncenter = 0
-    for n in pos:
-        x, y = pos[n]
-        d = (x - 0.5) ** 2 + (y - 0.5) ** 2
-        if d < dmin:
-            ncenter = n
-            dmin = d
-    p = color_cliques(G4, 4)
-
-    plt.figure(4, figsize=(8, 8))
-    plt.subplot()
-    nx.draw_networkx_edges(G4, pos, nodelist=[ncenter], alpha=0.5)
-    nx.draw_networkx_nodes(G4, pos, nodelist=list(p.keys()),
-                           node_size=30,
-                           node_color=list(p.values()),
-                           cmap=plt.cm.Reds_r)
-    # nx.draw_networkx(G,pos)
-    plt.xlim(-0.05, 1.05)
-    plt.ylim(-0.05, 1.05)
-    plt.axis('off')
-    plt.show()
+    G_c = G
+    print(G_c.nodes)
+    G4 = cont_all_stars_iterative(G_c, 20)
+    draw_graph(G4)
