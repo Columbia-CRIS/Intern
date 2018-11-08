@@ -16,7 +16,7 @@ def random_color():
     return result
 
 
-def color_cliques(G, min_node_num=3):
+def color_cliques(G, ncenter, min_node_num=3):
     """hubs(cliques) are complete subgraphs of G"""
     p = dict(nx.single_source_shortest_path_length(G, ncenter))
     cliques = list(nx.algorithms.clique.find_cliques(G))
@@ -123,16 +123,11 @@ def contract_star(G, center):
         result = nx.contracted_nodes(result, center, node)
     return result
 
-
-if __name__ == "__main__":
-    my_float = 0.003
-    this_float = 0.1
-    G = nx.random_geometric_graph(500, this_float)
-    print("original # of edges:", G.number_of_edges())
-    print("original # of nodes:", G.number_of_nodes())
+def draw_graph(G):
+    print("# of edges:", G.number_of_edges())
+    print("# of nodes:", G.number_of_nodes())
     # position is stored as node attribute data for random_geometric_graph
     pos = nx.get_node_attributes(G, 'pos')
-    G2 = nx.random_geometric_graph(200, this_float)
     """
     while(nx.number_connected_components(G2) < 2):
         count += 1
@@ -151,7 +146,7 @@ if __name__ == "__main__":
             ncenter = n
             dmin = d
 
-    p = color_cliques(G)
+    p = color_cliques(G, ncenter)
 
     plt.figure(1,figsize=(8, 8))
     plt.subplot()
@@ -166,34 +161,16 @@ if __name__ == "__main__":
     plt.axis('off')
     plt.show()
 
+    return ncenter
+
+if __name__ == "__main__":
+    my_float = 0.003
+    this_float = 0.1
+    G = nx.random_geometric_graph(500, this_float)
+    draw_graph(G)
+
     G2 = cont_all_cliques_iterative(G, 5)
-    print("# of edges G2:", G2.number_of_edges())
-    print("# of nodes G2: ", G2.number_of_nodes())
-    G2 = nx.convert_node_labels_to_integers(G2)
-
-    pos = nx.get_node_attributes(G2, 'pos')
-    dmin = 1
-    ncenter = 0
-    for n in pos:
-        x, y = pos[n]
-        d = (x - 0.5) ** 2 + (y - 0.5) ** 2
-        if d < dmin:
-            ncenter = n
-            dmin = d
-    p = color_cliques(G2,4)
-
-    plt.figure(2,figsize=(8, 8))
-    plt.subplot()
-    nx.draw_networkx_edges(G2, pos, nodelist=[ncenter], alpha=0.5)
-    nx.draw_networkx_nodes(G2, pos, nodelist=list(p.keys()),
-                           node_size=30,
-                           node_color=list(p.values()),
-                           cmap=plt.cm.Reds_r)
-    # nx.draw_networkx(G,pos)
-    plt.xlim(-0.05, 1.05)
-    plt.ylim(-0.05, 1.05)
-    plt.axis('off')
-    plt.show()
+    ncenter = draw_graph(G2)
     # print(nx.clustering(G))
     # print(list(nx.algorithms.clique.find_cliques(G)))
     # print(mylist[:10])
@@ -208,7 +185,7 @@ if __name__ == "__main__":
     G3 = cont_all_cliques(G, 3)
     print("# of edges G3:", G3.number_of_edges())
     print("# of nodes G3: ", G3.number_of_nodes())
-    G3 = nx.convert_node_labels_to_integers(G3)
+    # G3 = nx.convert_node_labels_to_integers(G3)
     # print(G3.number_of_nodes())
 
     pos = nx.get_node_attributes(G3, 'pos')
@@ -238,7 +215,7 @@ if __name__ == "__main__":
     G4 = cont_all_stars_iterative(G, 20)
     print("# of edges G4", G4.number_of_edges())
     print("# of nodes G4: ", G4.number_of_nodes())
-    G4 = nx.convert_node_labels_to_integers(G4)
+    # G4 = nx.convert_node_labels_to_integers(G4)
 
     pos = nx.get_node_attributes(G4, 'pos')
     dmin = 1
