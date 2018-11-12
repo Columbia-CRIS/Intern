@@ -7,6 +7,8 @@ class Merger(object):
     def __init__(self, G):
         self.graph = G
         self.s_node = {}
+        for node in G.nodes:
+            self.s_node[node] = 30
 
     @staticmethod
     def random_color():
@@ -72,12 +74,12 @@ class Merger(object):
         while len(cliques[0]) > min_clique_node:
             clique = cliques[0]
             self.graph = self.contract_clique(clique)
-            cliques = list(nx.algorithms.find_cliques(G))
+            cliques = list(nx.algorithms.find_cliques(self.graph))
             cliques.sort(key=len, reverse=True)
         return self.graph
 
     def cont_all_cliques(self, min_clique_node=4):
-        new = self.graph
+        self.graph = self.graph
         cliques = list(nx.algorithms.find_cliques(self.graph))
         cliques.sort(key=len, reverse=True)
         while len(cliques[0]) >= min_clique_node:
@@ -88,42 +90,40 @@ class Merger(object):
                         c.remove(node)
                         # print(node, "\t", c)
                         # cliques.remove(c)
-            new = self.contract_clique(clique)
+            self.graph = self.contract_clique(clique)
             print(clique == cliques[0])
             cliques.remove(cliques[0])
             cliques.sort(key=len, reverse=True)
-        return new
+        return self.graph
 
     def contract_clique(self, clique):
-        new = self.graph
         rand = random.randint(0, len(clique)-1)
-        center = clique[rand]
+        center = clique[0]
         clique.remove(center)
         for node in clique:
             # print(center, node)
             if node == center:
                 continue
             try:
-                new = nx.contracted_nodes(self.graph, center, node, self_loops=False)
-                self.s_node[center] += 30
+                self.graph = nx.contracted_nodes(self.graph, center, node, self_loops=False)
+                self.s_node[center] += self.s_node[node]
             except nx.exception.NetworkXError as e:
                 print("error: ", e)
                 print(center, node)
-        return new
+        return self.graph
 
     def cont_all_stars_iterative(self, min_neighbors=10):
         neighbor = {}
-        result = self.graph
         for node in self.graph:
             try:
-                neighbors = list(nx.all_neighbors(result, node))
+                neighbors = list(nx.all_neighbors(self.graph, node))
             except nx.exception.NetworkXError:
                 continue
             if len(neighbors) > min_neighbors:
                 neighbor[node] = neighbors
-                result = self.contract_star(node)
-                result = nx.convert_node_labels_to_integers(result)
-        return result
+                self.graph = self.contract_star(node)
+                self.graph = nx.convert_node_labels_to_integers(self.graph)
+        return self.graph
 
     def contract_star(self, center):
         result = self.graph
@@ -132,7 +132,7 @@ class Merger(object):
         return result
 
     @staticmethod
-    def draw_graph(G, node_size_dict=30):
+    def draw_graph(G, node_size_dict=[]):
         print("# of edges:", G.number_of_edges())
         print("# of nodes:", G.number_of_nodes())
         # position is stored as node attribute data for random_geometric_graph
@@ -158,6 +158,8 @@ class Merger(object):
 
         p = Merger.color_cliques(G)
 
+        if node_size_dict == []:
+            node_size_dict = 30
         plt.figure(1,figsize=(8, 8))
         plt.subplot()
         nx.draw_networkx_edges(G, pos, nodelist=[ncenter], alpha=0.5)
@@ -175,24 +177,43 @@ class Merger(object):
 
 
 if __name__ == "__main__":
-    G = nx.random_geometric_graph(500, 0.1)
+    # G = nx.random_geometric_graph(1000, 0.08)
+    # print(G.nodes)
+    # Merger.draw_graph(G)
+    #
+    # G_c = G
+    # print(G_c.nodes)
+    # G2 = Merger(G)
+    # G2.graph = G2.cont_all_cliques_iterative(7)
+    # ncenter = Merger.draw_graph(G2.graph, node_size_dict=list(G2.s_node.values()))
+    #
+    # G_c = G
+    # print(G_c.nodes)
+    # G3 = Merger(G)
+    # G3.graph = G3.cont_all_cliques(3)
+    # Merger.draw_graph(G3)
+    #
+    # G_c = G
+    # print(G_c.nodes)
+    # G4 = Merger(G)
+    # G4.graph = G4.cont_all_stars_iterative(20)
+    # Merger.draw_graph(G4)
+    G = nx.Graph()
+    for i in range(8):
+        G.add_node(i)
+    for i in range(5):
+        for j in range(5):
+            if i != j:
+                G.add_edge(i,j)
+    for k in range(4):
+        for l in range(4):
+            if k != l:
+                G.add_edge(k+4,l+4)
     print(G.nodes)
-    Merger.draw_graph(G)
-
-    G_c = G
-    print(G_c.nodes)
-    G2 = Merger(G)
-    G2.graph = G2.cont_all_cliques_iterative(7)
-    ncenter = Merger.draw_graph(G2.graph)
-
-    G_c = G
-    print(G_c.nodes)
-    G3 = Merger(G)
-    G3.graph = G3.cont_all_cliques(3)
-    Merger.draw_graph(G3)
-
-    G_c = G
-    print(G_c.nodes)
-    G4 = Merger(G)
-    G4.graph = G4.cont_all_stars_iterative(20)
-    Merger.draw_graph(G4)
+    print(G.edges)
+    plt.figure(1, figsize=(8, 8))
+    plt.subplot()
+    nx.draw(G)
+    plt.show()
+    my_graph = Merger(G)
+    my_graph.cont_all_cliques()
