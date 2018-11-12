@@ -51,7 +51,9 @@ class Merger(object):
 
     def color_neighbors(self):
         """possibility of robustness loss"""
-        p = dict(nx.single_source_shortest_path_length(self.graph, ncenter))
+        p = {}
+        for node in G:
+            p[node] = "#000000"
         neighbor = {}
 
         for node in self.graph:
