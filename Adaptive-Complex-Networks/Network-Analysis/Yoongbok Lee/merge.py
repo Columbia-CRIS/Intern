@@ -9,6 +9,7 @@ class Merger(object):
         self.s_node = {}
         for node in G.nodes:
             self.s_node[node] = 30
+        self.level = [self.graph]
 
     @staticmethod
     def random_color():
@@ -96,6 +97,7 @@ class Merger(object):
             self.graph = self.contract_clique(clique)
             cliques.remove(cliques[0])
             cliques.sort(key=len, reverse=True)
+        self.level.append(self.graph)
         return self.graph
 
     def contract_clique(self, clique):
@@ -184,23 +186,27 @@ if __name__ == "__main__":
     print(G.nodes)
     Merger.draw_graph(G)
 
-    G_c = G
-    print(G_c.nodes)
-    G2 = Merger(G)
-    G2.graph = G2.cont_all_cliques_iterative(7)
-    ncenter = Merger.draw_graph(G2.graph, node_size_dict=list(G2.s_node.values()))
+    # G_c = G
+    # print(G_c.nodes)
+    # G2 = Merger(G)
+    # G2.graph = G2.cont_all_cliques_iterative(7)
+    # ncenter = Merger.draw_graph(G2.graph, node_size_dict=list(G2.s_node.values()))
 
     G_c = G
     print(G_c.nodes)
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph)
+    Merger.draw_graph(G3.graph, node_size_dict=list(G3.s_node.values()))
+    G3.graph = G3.cont_all_cliques(4)
+    Merger.draw_graph(G3.graph, node_size_dict=list(G3.s_node.values()))
     #
     # G_c = G
     # print(G_c.nodes)
     # G4 = Merger(G)
     # G4.graph = G4.cont_all_stars_iterative(20)
     # Merger.draw_graph(G4.graph)
+
+    """testing with small graph discussed"""
     G = nx.MultiGraph()
     for i in range(8):
         G.add_node(i)
