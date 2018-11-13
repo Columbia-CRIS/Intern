@@ -10,6 +10,7 @@ class Merger(object):
         for node in G.nodes:
             self.s_node[node] = 30
         self.level = [self.graph]
+        nx.set_node_attributes(self.graph, self.s_node, name="node_size_concat")
 
     @staticmethod
     def random_color():
@@ -141,7 +142,7 @@ class Merger(object):
         print("# of nodes:", G.number_of_nodes())
         # position is stored as node attribute data for random_geometric_graph
         pos = nx.get_node_attributes(G, 'pos')
-        print(pos)
+        # print(pos)
         """
         while(nx.number_connected_components(G2) < 2):
             count += 1
@@ -167,7 +168,7 @@ class Merger(object):
         plt.figure(1,figsize=(8, 8))
         plt.subplot()
         nx.draw_networkx_edges(G, pos, nodelist=[ncenter], alpha=0.5)
-        nx.draw_networkx_nodes(G, pos, nodelist=list(p.keys()),
+        nx.draw_networkx_nodes(G, pos, nodelist=G.nodes,
                                node_size=node_size_dict,
                                node_color=list(p.values()),
                                cmap=plt.cm.Reds_r)
@@ -182,32 +183,22 @@ class Merger(object):
 
 if __name__ == "__main__":
     G = nx.random_geometric_graph(1000, 0.08)
-    G = nx.MultiGraph(G)
-    print(G.nodes)
-    Merger.draw_graph(G)
+    # G = nx.MultiGraph(G)
+    # print(G.nodes)
+    # Merger.draw_graph(G)
 
     # G_c = G
     # print(G_c.nodes)
-    # G2 = Merger(G)
-    # G2.graph = G2.cont_all_cliques_iterative(7)
-    # ncenter = Merger.draw_graph(G2.graph, node_size_dict=list(G2.s_node.values()))
-
-    G_c = G
-    print(G_c.nodes)
-    G3 = Merger(G)
-    G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=list(G3.s_node.values()))
-    G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=list(G3.s_node.values()))
-    #
-    # G_c = G
-    # print(G_c.nodes)
-    # G4 = Merger(G)
-    # G4.graph = G4.cont_all_stars_iterative(20)
-    # Merger.draw_graph(G4.graph)
+    # G3 = Merger(G)
+    # G3.graph = G3.cont_all_cliques(4)
+    # Merger.draw_graph(G3.graph, node_size_dict=list(G3.s_node.values()))
+    # G3.graph = G3.cont_all_cliques(4)
+    # Merger.draw_graph(G3.graph, node_size_dict=list(G3.s_node.values()))
+    # G3.graph = G3.cont_all_cliques(4)
+    # Merger.draw_graph(G3.graph, node_size_dict=list(G3.s_node.values()))
 
     """testing with small graph discussed"""
-    G = nx.MultiGraph()
+    G = nx.Graph()
     for i in range(8):
         G.add_node(i)
     for i in range(5):
@@ -229,5 +220,5 @@ if __name__ == "__main__":
     print(my_graph.graph.edges)
     plt.figure(2, figsize=(8, 8))
     plt.subplot()
-    nx.draw(my_graph.graph)
+    nx.draw(my_graph.graph, node_size_dict=30)
     plt.show()
