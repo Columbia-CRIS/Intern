@@ -84,8 +84,9 @@ class Merger(object):
         self.graph = self.graph
         cliques = list(nx.algorithms.find_cliques(self.graph))
         cliques.sort(key=len, reverse=True)
-        while len(cliques[0]) >= min_clique_node:
+        while len(cliques) > 0 and len(cliques[0]) >= min_clique_node:
             clique = cliques[0]
+            # print(clique)
             for node in clique:
                 for c in cliques:
                     if node in c and c != clique:
@@ -93,7 +94,6 @@ class Merger(object):
                         # print(node, "\t", c)
                         # cliques.remove(c)
             self.graph = self.contract_clique(clique)
-            print(clique == cliques[0])
             cliques.remove(cliques[0])
             cliques.sort(key=len, reverse=True)
         return self.graph
@@ -179,28 +179,29 @@ class Merger(object):
 
 
 if __name__ == "__main__":
-    # G = nx.random_geometric_graph(1000, 0.08)
-    # print(G.nodes)
-    # Merger.draw_graph(G)
-    #
-    # G_c = G
-    # print(G_c.nodes)
-    # G2 = Merger(G)
-    # G2.graph = G2.cont_all_cliques_iterative(7)
-    # ncenter = Merger.draw_graph(G2.graph, node_size_dict=list(G2.s_node.values()))
-    #
-    # G_c = G
-    # print(G_c.nodes)
-    # G3 = Merger(G)
-    # G3.graph = G3.cont_all_cliques(3)
-    # Merger.draw_graph(G3)
+    G = nx.random_geometric_graph(1000, 0.08)
+    G = nx.MultiGraph(G)
+    print(G.nodes)
+    Merger.draw_graph(G)
+
+    G_c = G
+    print(G_c.nodes)
+    G2 = Merger(G)
+    G2.graph = G2.cont_all_cliques_iterative(7)
+    ncenter = Merger.draw_graph(G2.graph, node_size_dict=list(G2.s_node.values()))
+
+    G_c = G
+    print(G_c.nodes)
+    G3 = Merger(G)
+    G3.graph = G3.cont_all_cliques(4)
+    Merger.draw_graph(G3.graph)
     #
     # G_c = G
     # print(G_c.nodes)
     # G4 = Merger(G)
     # G4.graph = G4.cont_all_stars_iterative(20)
-    # Merger.draw_graph(G4)
-    G = nx.Graph()
+    # Merger.draw_graph(G4.graph)
+    G = nx.MultiGraph()
     for i in range(8):
         G.add_node(i)
     for i in range(5):
@@ -218,4 +219,9 @@ if __name__ == "__main__":
     nx.draw(G)
     plt.show()
     my_graph = Merger(G)
-    my_graph.cont_all_cliques()
+    my_graph.cont_all_cliques(min_clique_node=3)
+    print(my_graph.graph.edges)
+    plt.figure(2, figsize=(8, 8))
+    plt.subplot()
+    nx.draw(my_graph.graph)
+    plt.show()
