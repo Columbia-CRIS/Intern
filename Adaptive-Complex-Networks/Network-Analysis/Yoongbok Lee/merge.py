@@ -18,7 +18,7 @@ class Merger(object):
     @staticmethod
     def random_color():
         """selecting random color in hex"""
-        hex_digits = [0,0,0,0,0,0]
+        hex_digits = [0, 0, 0, 0, 0, 0]
         for i in range(len(hex_digits)):
             hex_digits[i] = random.randint(0,15)
         result = "#"
@@ -49,9 +49,9 @@ class Merger(object):
                 for node in clique:
                     p[node] = clique_color
                 for node in clique:
-                    for clique in cliques:
-                        if node in clique:
-                            cliques.remove(clique)
+                    for clique2 in cliques:
+                        if node in clique2:
+                            cliques.remove(clique2)
         return p
 
     def color_neighbors(self):
@@ -105,16 +105,27 @@ class Merger(object):
         return self.graph
 
     def contract_clique(self, clique):
-        rand = random.randint(0, len(clique)-1)
-
-        def get_biggest_node(m, clique):
-            max_size_node = clique[0]
-            for node in clique:
+        def get_biggest_node(m, cur_clique):
+            max_size_node = cur_clique[0]
+            for node in cur_clique:
                 if m.s_node[node] > m.s_node[max_size_node]:
                     max_size_node = node
             return max_size_node
 
         center = get_biggest_node(self, clique)
+        # x_sum = 0
+        # y_sum = 0
+        # pos = nx.get_node_attributes(self.graph, "pos")
+        # for node in clique:
+        #     try:
+        #         x_sum += pos[node][0]
+        #         y_sum += pos[node][1]
+        #     except:
+        #         pass
+        # new_node_x = x_sum/len(clique)
+        # new_node_y = y_sum/len(clique)
+        # pos[center] = [new_node_x, new_node_y]
+        # nx.set_node_attributes(G, pos, "pos")
         clique.remove(center)
         for node in clique:
             # print(center, node)
@@ -148,7 +159,7 @@ class Merger(object):
         return result
 
     @staticmethod
-    def draw_graph(G, node_size_dict={}):
+    def draw_graph(G, node_size_dict={}, label=False):
         """this is specific to the graph with positions"""
         print("# of edges:", G.number_of_edges())
         print("# of nodes:", G.number_of_nodes())
@@ -183,7 +194,8 @@ class Merger(object):
                                node_size=node_size_list,
                                node_color=list(p.values()),
                                cmap=plt.cm.Reds_r)
-        nx.draw_networkx_labels(G,pos)
+        if label:
+            nx.draw_networkx_labels(G, pos)
         # nx.draw_networkx(G,pos)
         plt.xlim(-0.05, 1.05)
         plt.ylim(-0.05, 1.05)
@@ -249,7 +261,7 @@ class Merger(object):
         return bin
 
 if __name__ == "__main__":
-    G = nx.random_geometric_graph(100000, 0.0071)
+    G = nx.random_geometric_graph(10000, 0.021)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
