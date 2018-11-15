@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
+import numpy as np
 
 class Merger(object):
 
@@ -200,12 +201,22 @@ class Merger(object):
     @staticmethod
     def plot_degree(G, log_scale=True):
         degree_dict = {}
+        degree_list = []
         for node in G.nodes:
             degree = len(list(nx.neighbors(G,node)))
+            degree_list.append(degree)
             try:
                 degree_dict[degree] += 1
             except KeyError:
                 degree_dict[degree] = 1
+        bin = Merger.get_bins(degree_list)
+        plt.hist(degree_list, bins=bin)
+        if log_scale:
+            plt.semilogy()
+        plt.xlabel('degree')
+        plt.ylabel('# nodes')
+        plt.title('degree_dist')
+        plt.show()
         return degree_dict
 
 
@@ -213,24 +224,45 @@ class Merger(object):
     def plot_spd(G, log_scale=False):
         spd = nx.shortest_path_length(G)
         # print(list(spd))
-        shortest_path = {}
+        shortest_path_dict = {}
+        shortest_paths = []
         for node in spd:
+            shortest_paths.append(list(node[1].values()))
             for length in node[1].values():
                 try:
-                    shortest_path[length] += 1
+                    shortest_path_dict[length] += 1
                 except KeyError:
-                    shortest_path[length] = 1
-        return shortest_path
+                    shortest_path_dict[length] = 1
+        flattened_list = [y for x in shortest_paths for y in x]
+        bin = Merger.get_bins(flattened_list)
+        plt.hist(flattened_list,bins=bin)
+        if log_scale:
+            plt.semilogy()
+        plt.xlabel('# shortest path length')
+        plt.ylabel('# connections')
+        plt.title('spd_dist')
+        plt.show()
+        return shortest_path_dict
 
+    @staticmethod
+    def get_bins(data):
+        start = min(data)-0.5
+        end = max(data)+0.5
+        count = start
+        bin = []
+        while count <= end:
+            bin.append(count)
+            count+=1
+        return bin
 
 if __name__ == "__main__":
-    G = nx.random_geometric_graph(100, 0.2)
+    G = nx.random_geometric_graph(1000, 0.08)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
 
-    print(Merger.plot_degree(G))
-    print(Merger.plot_spd(G))
+    print(Merger.plot_degree(G, True))
+    print(Merger.plot_spd(G, False))
 
     # G_c = G
     # print(G_c.nodes)
