@@ -261,18 +261,25 @@ if __name__ == "__main__":
     # print(G.nodes)
     Merger.draw_graph(G)
 
-    print(Merger.plot_degree(G, True))
+    spd_log = True
+    degree_log = True
+
+    print(Merger.plot_degree(G, degree_log))
     print(Merger.plot_spd(G, False))
 
-    # G_c = G
-    # print(G_c.nodes)
-    # G3 = Merger(G)
-    # G3.graph = G3.cont_all_cliques(4)
-    # Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
-    # G3.graph = G3.cont_all_cliques(4)
-    # Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
-    # G3.graph = G3.cont_all_cliques(4)
-    # Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
+    G3 = Merger(G)
+    G3.graph = G3.cont_all_cliques(4)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
+    G3.graph = G3.cont_all_cliques(4)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
+    G3.graph = G3.cont_all_cliques(4)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
 
     """testing with small graph discussed"""
     # G = nx.Graph()
