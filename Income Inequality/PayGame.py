@@ -19,6 +19,9 @@ num_levels = 100
 count_levels_list = np.zeros((100, 1))
 num_agents = 10000
 agent_levels_list = np.zeros((10000, 1)) # which level the agent is at
+agent_alpha_list = np.zeros(10000)
+agent_beta_list = np.zeros(10000)
+agent_gamma_list = np.zeros(10000)
 #count_num_agents_old = 10000
 #index_list = [0, 1, 2, 3, 4]
 #switch_list = []
@@ -45,6 +48,10 @@ def setup():
         count_levels_list[r, 0] += 1
         agent_levels_list[i, 0] = r
     
+    agent_alpha_list[:] = np.random.normal(alpha_list[0], 3, 10000)
+    agent_beta_list[:] = np.random.normal(beta_list[0], 0.3, 10000)
+    agent_gamma_list[:] = np.random.normal(beta_list[0], 0.3, 10000)
+    
 
 def turtle():
     count_levels_list_copy = count_levels_list # make a copy
@@ -60,13 +67,15 @@ def turtle():
         num_target = count_levels_list[level_target, 0]
         num_self = count_levels_list[level_self, 0]
         
-        payoff_target = alpha_list[0] * math.log(s_target) 
-        payoff_target -= beta_list[0] * math.log(s_target) ** 2
-        payoff_target -= gamma_list[0] * math.log(num_target + 1.0 / num_agents)
+        alpha, beta, gamma = agent_alpha_list[i], agent_beta_list[i], agent_gamma_list[i]
         
-        payoff_self = alpha_list[0] * math.log(s_self)
-        payoff_self -= beta_list[0] * math.log(s_self) ** 2
-        payoff_self -= gamma_list[0] * math.log(num_self + 1.0 / num_agents)
+        payoff_target = alpha * math.log(s_target) 
+        payoff_target -= beta * math.log(s_target) ** 2
+        payoff_target -= gamma * math.log(num_target + 1.0 / num_agents)
+        
+        payoff_self = alpha * math.log(s_self)
+        payoff_self -= beta * math.log(s_self) ** 2
+        payoff_self -= gamma * math.log(num_self + 1.0 / num_agents)
         
         
         if payoff_target > payoff_self:
