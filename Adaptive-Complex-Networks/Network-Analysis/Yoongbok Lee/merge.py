@@ -4,6 +4,7 @@ import random
 import numpy as np
 
 
+
 class Merger(object):
 
     def __init__(self, G):
@@ -259,6 +260,7 @@ class Merger(object):
             bin.append(count)
             count+=1
         return bin
+
 
 if __name__ == "__main__":
     G = nx.random_geometric_graph(10000, 0.021)
