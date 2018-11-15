@@ -4,7 +4,6 @@ import random
 import numpy as np
 
 
-
 class Merger(object):
 
     def __init__(self, G):
@@ -263,7 +262,7 @@ class Merger(object):
 
 
 if __name__ == "__main__":
-    G = nx.random_geometric_graph(10000, 0.021)
+    G = nx.random_geometric_graph(1000, 0.1)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
@@ -277,15 +276,15 @@ if __name__ == "__main__":
 
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
     print(Merger.plot_degree(G3.graph, degree_log))
     print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
     print(Merger.plot_degree(G3.graph, degree_log))
     print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
     print(Merger.plot_degree(G3.graph, degree_log))
     print(Merger.plot_spd(G3.graph, spd_log))
 
