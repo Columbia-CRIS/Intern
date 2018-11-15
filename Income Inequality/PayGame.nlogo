@@ -1,5 +1,5 @@
 turtles-own [level level-next alpha beta gamma class payoff loss]
-globals [count-levels-list count-levels-combined num-bars count-num-agents count-num-agents-old index-list switch-list N-list alpha-list beta-list gamma-list turtle-count]
+globals [count-levels-list count-levels-combined num-bars count-num-agents count-num-agents-old index-list switch-list N-list alpha-list beta-list gamma-list turtle-count alpha-delta-list]
 
 ;; Basic functions
 
@@ -32,6 +32,10 @@ to setup
 
   setup-patches
 
+  ;;foreach num-agents
+  ;;[ ?1 ->
+    ;;set (item ?1 alpha-delta-list) (show random-normal 10.1 5.2)
+  ;;]
 
   foreach index-list
   [ ?1 ->
@@ -134,19 +138,26 @@ to imitate
 
 
     ;; compare, if target has a higher payoff, switch
-    let payoff-target alpha * (ln s-target) - beta * (ln s-target) ^ 2 - gamma * (ln (num-target + 1 / num-agents))
-    let payoff-self alpha * (ln s-self) - beta * (ln s-self) ^ 2 - gamma * (ln num-self)
+    let a1 (random-normal alpha 0.01)
+    let a2 (random-normal alpha 0.01)
+    let b1 (random-normal beta 0.01)
+    let b2 (random-normal beta 0.01)
+    let g1 (random-normal gamma 0.01)
+    let g2 (random-normal gamma 0.01)
+
+    let payoff-target a1 * (ln s-target) - b1 * (ln s-target) ^ 2 - g1 * (ln (num-target + 1 / num-agents))
+    let payoff-self a2 * (ln s-self) - b2 * (ln s-self) ^ 2 - g2 * (ln num-self)
     set payoff payoff-self
 
     ;; using a smooth curve for decision making
     let diff (payoff-target - payoff-self)
     let exp_s 2.0
-    let exp_mu 5.0
+    let exp_mu 3.0
     let cdf ((1.0 / (1.0 + exp((exp_mu - diff) / exp_s))) * 100000)
     let exp_random random 100000
 
-    if diff > 0 [
-    ;;if cdf > exp_random and diff > 0 [
+    ;;if diff > 0 [
+    if cdf > exp_random and diff > 0 [
       leave-level
       set level level-target
       enter-level
