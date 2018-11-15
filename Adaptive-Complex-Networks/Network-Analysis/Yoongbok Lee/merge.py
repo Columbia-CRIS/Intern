@@ -3,6 +3,7 @@ import networkx as nx
 import random
 import numpy as np
 
+
 class Merger(object):
 
     def __init__(self, G):
@@ -106,12 +107,12 @@ class Merger(object):
     def contract_clique(self, clique):
         rand = random.randint(0, len(clique)-1)
 
-        def get_biggest_node(m,clique):
-            max = clique[0]
+        def get_biggest_node(m, clique):
+            max_size_node = clique[0]
             for node in clique:
-                if m.s_node[node] > m.s_node[max]:
-                    max = node
-            return max
+                if m.s_node[node] > m.s_node[max_size_node]:
+                    max_size_node = node
+            return max_size_node
 
         center = get_biggest_node(self, clique)
         clique.remove(center)
@@ -154,13 +155,6 @@ class Merger(object):
         # position is stored as node attribute data for random_geometric_graph
         pos = nx.get_node_attributes(G, 'pos')
         # print(pos)
-        """
-        while(nx.number_connected_components(G2) < 2):
-            count += 1
-            this_float -= my_float
-            G = G2
-            G2 = nx.random_geometric_graph(200,this_float)
-        """
         print(nx.number_connected_components(G), "connected components")
         # find node near center (0.5,0.5)
         dmin = 1
@@ -219,7 +213,6 @@ class Merger(object):
         plt.show()
         return degree_dict
 
-
     @staticmethod
     def plot_spd(G, log_scale=False):
         spd = nx.shortest_path_length(G)
@@ -256,16 +249,17 @@ class Merger(object):
         return bin
 
 if __name__ == "__main__":
-    G = nx.random_geometric_graph(1000, 0.08)
+    G = nx.random_geometric_graph(100000, 0.0071)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
 
-    spd_log = True
+
     degree_log = True
+    spd_log = False
 
     print(Merger.plot_degree(G, degree_log))
-    print(Merger.plot_spd(G, False))
+    print(Merger.plot_spd(G, spd_log))
 
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
