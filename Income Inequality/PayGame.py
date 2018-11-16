@@ -18,7 +18,7 @@ import math
 #agent_beta_list = np.zeros(10000)
 #agent_gamma_list = np.zeros(10000)
 
-N_list = [0.5, 0.3, 0.1, 0.05, 0.05]
+N_list = [0.5, 0.5, 0, 0, 0]
 alpha_list = [93.4, 95.8, 100, 100, 100]
 beta_list = [3.87, 3.67, 4, 4, 4]
 gamma_list = [2.17, 4.34, 5, 5, 5]
@@ -34,7 +34,8 @@ agent_classes_list = np.zeros(10000) # which level the agent belongs to
 s_min = 20000.0
 s_max = 3000000.0
 
-epoch = 10
+epsilon = 60000
+epoch_max = 30
 
 def level_to_salary(x):
     return s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)
@@ -57,8 +58,8 @@ def setup():
 
 def turtle():
     # make a copy
-    count_levels_list_copy = count_levels_list
-    count_levels_combined_copy = count_levels_combined
+    count_levels_list_copy = count_levels_list.copy()
+    count_levels_combined_copy = count_levels_combined.copy()
     
     for i in range(num_agents):
         r = random.randint(0, num_levels - 1)
@@ -93,8 +94,11 @@ def turtle():
             count_levels_combined_copy[level_target] += 1
             agent_levels_list[i] = level_target
     
+    loss = sum((count_levels_combined_copy - count_levels_combined) ** 2)
     count_levels_list[:, :] = count_levels_list_copy[:, :]
     count_levels_combined[:] = count_levels_combined_copy[:]
+    
+    return loss
     
 def plot():
     x = np.linspace(0, num_levels, num_levels)
@@ -106,6 +110,12 @@ def plot():
 
 if __name__ == '__main__':
     setup()
-    for i in range(epoch):
-        turtle()
+    print("Started... ")
+    loss = epsilon + 1
+    epoch = 0
+    while loss > epsilon and epoch < epoch_max:
+        loss = turtle()
+        print("Epoch " + str(epoch) + " Loss: " + str(loss))
+        epoch += 1
     plot()
+    print("Converged after " + str(epoch) + " epoches. ")
