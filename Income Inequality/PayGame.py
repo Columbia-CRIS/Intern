@@ -18,7 +18,7 @@ import math
 #agent_beta_list = np.zeros(10000)
 #agent_gamma_list = np.zeros(10000)
 
-N_list = [0.5, 0.5, 0, 0, 0]
+N_list = [0.5, 0.3, 0.1, 0.05, 0.05]
 alpha_list = [93.4, 95.8, 100, 100, 100]
 beta_list = [3.87, 3.67, 4, 4, 4]
 gamma_list = [2.17, 4.34, 5, 5, 5]
@@ -29,21 +29,23 @@ count_levels_combined = np.zeros(100) # number of agents for given level
 num_agents = 10000
 agent_levels_list = np.zeros(10000) # which level the agent is at
 num_classes = 5
-agent_classes_list = np.random.choice(5, 10000, p=N_list) # which level the agent belongs to
+agent_classes_list = np.zeros(10000) # which level the agent belongs to
 
 s_min = 20000.0
 s_max = 3000000.0
 
-epoch = 50
+epoch = 10
 
 def level_to_salary(x):
     return s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)
 
 def setup():
+    agent_classes_list[:] = np.random.choice(5, 10000, p=N_list)
+    
     mean = num_levels / 2
     for i in range(num_agents):
         r = int(round(mean)) # all agents start at the mean level
-        c = agent_classes_list[i]
+        c = int(round(agent_classes_list[i]))
         count_levels_list[r, c] += 1
         count_levels_combined[r] += 1
         agent_levels_list[i] = r
@@ -60,7 +62,7 @@ def turtle():
     
     for i in range(num_agents):
         r = random.randint(0, num_levels - 1)
-        c = agent_classes_list[i]
+        c = int(round(agent_classes_list[i]))
         
         level_target = r
         level_self = int(round(agent_levels_list[i]))
@@ -96,8 +98,9 @@ def turtle():
     
 def plot():
     x = np.linspace(0, num_levels, num_levels)
-    plt.plot(x, count_levels_list[:, 0], label="class 1", marker='', color='skyblue')
-    plt.plot(x, count_levels_list[:, 1], label="class 2", marker='', color='olive')
+    for i in range(num_classes):
+        plt.plot(x, count_levels_list[:, i], marker='')
+    
     #plt.plot(x, count_levels_combined, label="total", marker='', color='black') # total
     
 
