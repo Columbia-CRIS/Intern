@@ -14,8 +14,6 @@ import random
 import math
 
 
-
-
 #agent_alpha_list = np.zeros(10000)
 #agent_beta_list = np.zeros(10000)
 #agent_gamma_list = np.zeros(10000)
@@ -27,15 +25,16 @@ gamma_list = [2.17, 4.34, 5, 5, 5]
 
 num_levels = 100
 count_levels_list = np.zeros((100, 5)) # number of agents for given level and class
+count_levels_combined = np.zeros(100) # number of agents for given level
 num_agents = 10000
 agent_levels_list = np.zeros(10000) # which level the agent is at
 num_classes = 5
-agent_classes_list = np.random.choice(5, 10000, p=N_list)
+agent_classes_list = np.random.choice(5, 10000, p=N_list) # which level the agent belongs to
 
 s_min = 20000.0
 s_max = 3000000.0
 
-epoch = 25
+epoch = 50
 
 def level_to_salary(x):
     return s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)
@@ -46,6 +45,7 @@ def setup():
         r = int(round(mean)) # all agents start at the mean level
         c = agent_classes_list[i]
         count_levels_list[r, c] += 1
+        count_levels_combined[r] += 1
         agent_levels_list[i] = r
     
     #agent_alpha_list[:] = np.random.normal(alpha_list[0], 0.2, 10000)
@@ -54,7 +54,9 @@ def setup():
     
 
 def turtle():
-    count_levels_list_copy = count_levels_list # make a copy
+    # make a copy
+    count_levels_list_copy = count_levels_list
+    count_levels_combined_copy = count_levels_combined
     
     for i in range(num_agents):
         r = random.randint(0, num_levels - 1)
@@ -66,8 +68,8 @@ def turtle():
         s_target = level_to_salary(level_target + 1)
         s_self = level_to_salary(level_self + 1)
         
-        num_target = count_levels_list[level_target, c]
-        num_self = count_levels_list[level_self, c]
+        num_target = count_levels_combined[level_target]
+        num_self = count_levels_combined[level_self]
         
         #alpha, beta, gamma = agent_alpha_list[i], agent_beta_list[i], agent_gamma_list[i]
         alpha, beta, gamma = alpha_list[c], beta_list[c], gamma_list[c]
@@ -84,15 +86,20 @@ def turtle():
         if payoff_target > payoff_self:
             # move from self to target
             count_levels_list_copy[level_self, c] -= 1
+            count_levels_combined_copy[level_self] -= 1
             count_levels_list_copy[level_target, c] += 1
+            count_levels_combined_copy[level_target] += 1
             agent_levels_list[i] = level_target
     
     count_levels_list[:, :] = count_levels_list_copy[:, :]
+    count_levels_combined[:] = count_levels_combined_copy[:]
     
 def plot():
     x = np.linspace(0, num_levels, num_levels)
     plt.plot(x, count_levels_list[:, 0], label="class 1", marker='', color='skyblue')
     plt.plot(x, count_levels_list[:, 1], label="class 2", marker='', color='olive')
+    #plt.plot(x, count_levels_combined, label="total", marker='', color='black') # total
+    
 
 if __name__ == '__main__':
     setup()
