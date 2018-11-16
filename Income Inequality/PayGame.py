@@ -7,7 +7,7 @@ Created on Thu Nov 15 12:50:31 2018
 @author: XIN
 """
 
-from __future__ import division
+
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -45,7 +45,7 @@ s_max = 3000000.0
 
 # stopping conditions
 epsilon = 30000
-epoch_max = 50
+epoch_max = 40
 
 
 # level -> salary value
@@ -132,7 +132,7 @@ def plot():
         plt.plot(x, count_levels_list[:, i], marker='')
     
     #plt.plot(x, count_levels_combined, label="total", marker='', color='black') # total
-    
+    plt.show()
 
 if __name__ == '__main__':
     setup()
@@ -143,5 +143,6 @@ if __name__ == '__main__':
         loss = turtle()
         print("Epoch " + str(epoch) + " Loss: " + str(loss))
         epoch += 1
-    plot()
+        plot()
+    
     print("Converged after " + str(epoch) + " epoches. ")
