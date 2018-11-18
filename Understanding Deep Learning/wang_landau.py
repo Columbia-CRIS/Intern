@@ -5,10 +5,11 @@ from keras.layers import Dense
 from keras.layers import Dropout
 from keras.utils import np_util
 import sys
+import math
 
 # fix random seed for reproducibility
-#seed = 7
-#np.random.seed(seed)
+seed = 7
+np.random.seed(seed)
 
 # load data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -52,13 +53,13 @@ y_final = np.append(y_train, y_test, axis = 0)
 #energy is defined as cross entropy over entire training set 
 g_map = {} #map from bin endpoints to densities
 histogram = {} #map from bin endpoints to counts
-histogram_map = {} #map from energies to bin endpoints
 num_bins = 100
 
 min_energy = 0
 max_energy = np.log(100) #upper bound for bin - 
 #if the network predicts a probability of .01 for the correct label for every sample, then the energy will be num_samples times this amount
 flatness = 0.9
+check_iteration = 100
 bins = []
 #splits energy landscape into bins
 i = min_energy
@@ -66,21 +67,36 @@ while i <= max_energy:
     bins.append((i, i+max_energy/num_bins))
     i += max_energy/num_bins
 
+for t in bins:
+    g_map[t] = 1
+    histogram[t] = 0
+
+#resets histogram when flat
+def reset():
+    for t in bins:
+        histogram[t] = 0
+
+
 def cost_function(weights):
     l1 = np.split(weights, )
     output_l1 = relu(np.dot(X_final, l1))
     output_l2 = softmax(np.dot(output_l1, l2))
 
+def get_endpoints(energy):
+    endpts = bins[0]
+    for b in bins:
+        if energy >= b[0] and energy < b[1]:
+            endpts = b
+            break
+
+    return endpts
 
 def g_function(energy):
-    if energy not in g_map:
-        g_map[energy] = 1
-    
-    return g_map[energy]
+    return g_map[get_endpoints(energy)]
     
 def update_g_function(energy, alpha):
-    if energy in g_map:
-        g_map[energy] = g_map[energy]*alpha
+    endpts = get_endpoints(energy)
+    g_map[endpts] = g_map[endpts]*alpha
 
 def update_histogram(energy):
     if energy in histogram:
@@ -106,27 +122,30 @@ def flat():
 def wang_landau(alpha, epsilon):
     x_i = np.random.normal(size = 784*12 + 12*num_classes) # a random initial configuration
     currentEnergy = cost_function(x_i)
+    iteration = 1
     
     while (alpha - 1 > epsilon):
-        while True:
-            x_propose = np.random()  
-            proposedEnergy = cost_function(x_propose) # the energy of the proposed configuration computed
-           
-            p_i = 1/(g_function(currentEnergy)*1.0)
-            p_propose = 1/(g_function(proposedEnergy)*1.0)
-            p = min(1, p_propose/p_i)
-            
-            indicator = np.random.binomial(1, p)
-            if indicator == 1:
-                x_i = x_propose
-                currentEnergy = proposedEnergy
-            
-            update_histogram(currentEnergy)
-            update_g_function(currentEnergy, alpha)
+        x_propose = np.random()  
+        proposedEnergy = cost_function(x_propose) # the energy of the proposed configuration computed
+       
+        p_i = 1/(g_function(currentEnergy)*1.0)
+        p_propose = 1/(g_function(proposedEnergy)*1.0)
+        p = min(1, p_propose/p_i)
+        
+        indicator = np.random.binomial(1, p)
+        if indicator == 1:
+            x_i = x_propose
+            currentEnergy = proposedEnergy
+        
+        update_histogram(currentEnergy)
+        update_g_function(currentEnergy, alpha)
 
+        if iteration % check_iteration == 0:
             if flat():
-                alpha = sqrt(alpha)
-                break
+                alpha = math.sqrt(alpha)
+                reset()
+    
+        iteration += 1
 
 
         
