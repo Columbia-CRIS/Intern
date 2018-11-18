@@ -8,8 +8,8 @@ import sys
 import math
 
 # fix random seed for reproducibility
-seed = 7
-np.random.seed(seed)
+'''seed = 7
+np.random.seed(seed)'''
 
 # load data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -76,9 +76,14 @@ def reset():
 
 
 def cost_function(weights):
-    w1 = np.split()
-    w2 = np.split()
-    model = baseline_model(w1, w2)
+    e1 = 784*12
+    e2 = e1 + 12
+    e3 = e2 + 120
+    e4 = e3 + 10
+    w1, b1, w2, b2 = np.split(weights, [e1, e2, e3, e4])
+    w1 = np.reshape(e1, (784, 12))
+    w2 = np.reshape(e3, (12, 10))
+    model = baseline_model(w1, b1, w2, b2)
     history_callback = model.fit(X_final, y_final, epochs=1, batch_size=X_final.shape[1])
     loss_history = history_callback.history["loss"]
     return loss_history[0]
@@ -148,5 +153,6 @@ def wang_landau(alpha, epsilon):
     
         iteration += 1
 
-
-        
+alpha = math.e
+epsilon = .0000003
+wang_landau(alpha, epsilon)
