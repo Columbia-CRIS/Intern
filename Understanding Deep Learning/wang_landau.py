@@ -3,11 +3,12 @@ from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
-from keras.utils import np_utils
+from keras.utils import np_util
+import sys
 
 # fix random seed for reproducibility
-seed = 7
-np.random.seed(seed)
+#seed = 7
+#np.random.seed(seed)
 
 # load data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -26,8 +27,7 @@ y_train = np_utils.to_categorical(y_train)
 y_test = np_utils.to_categorical(y_test)
 num_classes = y_test.shape[1]
 
-
-# define baseline model
+# we only care about using the network for forward propagation, so we can just use numpy arrays to do this
 def baseline_model():
     # create model
     model = Sequential()
@@ -35,32 +35,41 @@ def baseline_model():
     l2 = Dense(num_classes, kernel_initializer='normal', activation='softmax')
     l1 = model.add(l1)
     l2 = model.add(l2)
+    model.trainable = False
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model, l1, l2
-
-def set_weights(weights, l1, l2):
     
-
 # build the model
 model, l1, l2 = baseline_model()
-# Fit the model
-model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=200, verbose=2)
-# Final evaluation of the model
-scores = model.evaluate(X_test, y_test, verbose=0)
-print("Baseline Error: %.2f%%" % (100-scores[1]*100))
-#number of bins = 100 
+model.fit(X_final, y_final, epochs=1)
+#scores = model.evaluate(X_test, y_test, verbose=0)
+#print("Baseline Error: %.2f%%" % (100-scores[1]*100))
+
+
+X_final = np.append(X_train, X_test, axis = 0)
+y_final = np.append(y_train, y_test, axis = 0)
+ 
 #energy is defined as cross entropy over entire training set 
 g_map = {} #map from bin endpoints to densities
 histogram = {} #map from bin endpoints to counts
-histogram_map = {} #map from weights to bin endpoints
+histogram_map = {} #map from energies to bin endpoints
+num_bins = 100
 
 min_energy = 0
-max_energy = log(100) #upper bound - 
+max_energy = np.log(100) #upper bound for bin - 
 #if the network predicts a probability of .01 for the correct label for every sample, then the energy will be num_samples times this amount
 flatness = 0.9
+bins = []
+#splits energy landscape into bins
+i = min_energy
+while i <= max_energy:
+    bins.append((i, i+max_energy/num_bins))
+    i += max_energy/num_bins
 
 def cost_function(weights):
-    set_weights(weights)
+    l1 = np.split(weights, )
+    output_l1 = relu(np.dot(X_final, l1))
+    output_l2 = softmax(np.dot(output_l1, l2))
 
 
 def g_function(energy):
@@ -78,6 +87,21 @@ def update_histogram(energy):
         histogram[energy] += 1
     else:
         histogram[energy] = 1
+
+def flat():
+    mean_height = 0
+    min_height = sys.maxsize
+   
+    for b in histogram:
+        mean_height += histogram[b]
+        min_height = min(min_height, histogram[b])
+   
+    mean_height = mean_height/(len(histogram)*1.0)
+   
+    if mean_height*.9 > min_height:
+        return false
+
+    return true
 
 def wang_landau(alpha, epsilon):
     x_i = np.random.normal(size = 784*12 + 12*num_classes) # a random initial configuration
@@ -99,6 +123,10 @@ def wang_landau(alpha, epsilon):
             
             update_histogram(currentEnergy)
             update_g_function(currentEnergy, alpha)
+
+            if flat():
+                alpha = sqrt(alpha)
+                break
 
 
         
