@@ -3,7 +3,7 @@ from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
-from keras.utils import np_util
+from keras import utils
 import sys
 import math
 
@@ -24,29 +24,27 @@ X_train = X_train / 255
 X_test = X_test / 255
 
 # one hot encode outputs
-y_train = np_utils.to_categorical(y_train)
-y_test = np_utils.to_categorical(y_test)
+y_train = utils.to_categorical(y_train)
+y_test = utils.to_categorical(y_test)
 num_classes = y_test.shape[1]
 
-# we only care about using the network for forward propagation, so we can just use numpy arrays to do this
-def baseline_model():
+def baseline_model(w1, b1, w2, b2):
     # create model
     model = Sequential()
     l1 = Dense(12, input_dim=num_pixels, kernel_initializer='uniform', activation='relu')
     l2 = Dense(num_classes, kernel_initializer='normal', activation='softmax')
-    l1 = model.add(l1)
-    l2 = model.add(l2)
+    model.add(l1)
+    model.add(l2)
+    l1.set_weights([w1, b1])
+    l2.set_weights([w2, b2])
     model.trainable = False
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model, l1, l2
+    return model
     
-# build the model
-model, l1, l2 = baseline_model()
-model.fit(X_final, y_final, epochs=1)
 #scores = model.evaluate(X_test, y_test, verbose=0)
 #print("Baseline Error: %.2f%%" % (100-scores[1]*100))
 
-
+#using entire dataset to approximate weight distribution
 X_final = np.append(X_train, X_test, axis = 0)
 y_final = np.append(y_train, y_test, axis = 0)
  
@@ -78,9 +76,12 @@ def reset():
 
 
 def cost_function(weights):
-    l1 = np.split(weights, )
-    output_l1 = relu(np.dot(X_final, l1))
-    output_l2 = softmax(np.dot(output_l1, l2))
+    w1 = np.split()
+    w2 = np.split()
+    model = baseline_model(w1, w2)
+    history_callback = model.fit(X_final, y_final, epochs=1, batch_size=X_final.shape[1])
+    loss_history = history_callback.history["loss"]
+    return loss_history[0]
 
 def get_endpoints(energy):
     endpts = bins[0]
