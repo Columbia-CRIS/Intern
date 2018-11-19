@@ -54,8 +54,8 @@ histogram = {} #map from bin endpoints to counts
 num_bins = 100
 
 min_energy = 0
-max_energy = np.log(100) #upper bound for bin - 
-#if the network predicts a probability of .01 for the correct label for every sample, then the energy will be num_samples times this amount
+max_energy = 12 #upper bound for bin - 
+#if the network predicts a probability of .01 for the correct label for every sample, then the energy will be this amount
 flatness = 0.9
 check_iteration = 100
 bins = []
@@ -78,14 +78,21 @@ def reset():
 def cost_function(weights):
     e1 = 784*12
     e2 = e1 + 12
-    e3 = e2 + 120
-    e4 = e3 + 10
-    w1, b1, w2, b2 = np.split(weights, [e1, e2, e3, e4])
-    w1 = np.reshape(e1, (784, 12))
-    w2 = np.reshape(e3, (12, 10))
+    e3 = e2 + 12*num_classes
+    e4 = e3 + num_classes
+    spl = np.split(weights, [e1, e2, e3, e4])
+    
+    w1 = spl[0]
+    b1 = spl[1]
+    w2 = spl[2]
+    b2 = spl[3]
+
+    w1 = np.reshape(w1, (784, 12))
+    w2 = np.reshape(w2, (12, num_classes))
     model = baseline_model(w1, b1, w2, b2)
     history_callback = model.fit(X_final, y_final, epochs=1, batch_size=X_final.shape[1])
     loss_history = history_callback.history["loss"]
+    print(loss_history[0])
     return loss_history[0]
 
 def get_endpoints(energy):
@@ -105,10 +112,8 @@ def update_g_function(energy, alpha):
     g_map[endpts] = g_map[endpts]*alpha
 
 def update_histogram(energy):
-    if energy in histogram:
-        histogram[energy] += 1
-    else:
-        histogram[energy] = 1
+    endpts = get_endpoints(energy)
+    histogram[endpts] += 1
 
 def flat():
     mean_height = 0
@@ -121,19 +126,21 @@ def flat():
     mean_height = mean_height/(len(histogram)*1.0)
    
     if mean_height*.9 > min_height:
-        return false
+        return False
 
-    return true
+    return True
 
 def wang_landau(alpha, epsilon):
-    x_i = np.random.normal(size = 784*12 + 12*num_classes) # a random initial configuration
+    x_i = np.random.normal(size = 784*12 + 12 + 12*num_classes + num_classes) # a random initial configuration
     currentEnergy = cost_function(x_i)
     iteration = 1
     
-    while (alpha - 1 > epsilon):
-        x_propose = np.random()  
+    while alpha - 1 > epsilon:
+        print("Iteration: %d" % iteration)
+        x_propose = np.random.normal(size = 784*12 + 12 + 12*num_classes + num_classes)
         proposedEnergy = cost_function(x_propose) # the energy of the proposed configuration computed
-       
+        print("current Energy: %d" % currentEnergy)
+        print("proposed Energy: %d" % proposedEnergy)
         p_i = 1/(g_function(currentEnergy)*1.0)
         p_propose = 1/(g_function(proposedEnergy)*1.0)
         p = min(1, p_propose/p_i)
