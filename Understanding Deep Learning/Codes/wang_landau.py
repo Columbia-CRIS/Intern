@@ -127,6 +127,16 @@ def flat():
 
     return True
 
+
+
+def save_dict(obj, name):
+    with open(name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def load_dict(name):
+    with open(name + '.pkl', 'rb') as f:
+        return pickle.load(f)
+
 def wang_landau(alpha, epsilon):
     x_i = np.random.normal(size = 784*12 + 12 + 12*num_classes + num_classes) # a random initial configuration
     currentEnergy = cost_function(x_i)
@@ -160,3 +170,4 @@ def wang_landau(alpha, epsilon):
 alpha = math.e
 epsilon = .0000003
 wang_landau(alpha, epsilon)
+save_obj(g_map, 'densities')
