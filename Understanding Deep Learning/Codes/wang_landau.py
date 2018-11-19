@@ -54,8 +54,7 @@ histogram = {} #map from bin endpoints to counts
 num_bins = 100
 
 min_energy = 0
-max_energy = 12 #upper bound for bin - 
-#if the network predicts a probability of .01 for the correct label for every sample, then the energy will be this amount
+max_energy = 20.0 #upper bound for bin - 
 flatness = 0.9
 check_iteration = 100
 bins = []
@@ -74,7 +73,6 @@ def reset():
     for t in bins:
         histogram[t] = 0
 
-
 def cost_function(weights):
     e1 = 784*12
     e2 = e1 + 12
@@ -92,7 +90,6 @@ def cost_function(weights):
     model = baseline_model(w1, b1, w2, b2)
     history_callback = model.fit(X_final, y_final, epochs=1, batch_size=X_final.shape[1])
     loss_history = history_callback.history["loss"]
-    print(loss_history[0])
     return loss_history[0]
 
 def get_endpoints(energy):
@@ -139,8 +136,8 @@ def wang_landau(alpha, epsilon):
         print("Iteration: %d" % iteration)
         x_propose = np.random.normal(size = 784*12 + 12 + 12*num_classes + num_classes)
         proposedEnergy = cost_function(x_propose) # the energy of the proposed configuration computed
-        print("current Energy: %d" % currentEnergy)
-        print("proposed Energy: %d" % proposedEnergy)
+        print("current Energy: %f" % currentEnergy)
+        print("proposed Energy: %f" % proposedEnergy)
         p_i = 1/(g_function(currentEnergy)*1.0)
         p_propose = 1/(g_function(proposedEnergy)*1.0)
         p = min(1, p_propose/p_i)
