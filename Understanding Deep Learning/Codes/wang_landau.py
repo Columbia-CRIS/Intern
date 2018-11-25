@@ -6,6 +6,7 @@ from keras.layers import Dropout
 from keras import utils
 import sys
 import math
+import threading
 
 # fix random seed for reproducibility
 '''seed = 7
@@ -51,16 +52,23 @@ y_final = np.append(y_train, y_test, axis = 0)
 #energy is defined as cross entropy over entire training set 
 g_map = {} #map from bin endpoints to densities
 histogram = {} #map from bin endpoints to counts
-num_bins = 100
+num_bins = 1 #to check for convergence
 
 min_energy = 0
 max_energy = 20.0 #upper bound for bin - 
 flatness = 0.9
-check_iteration = 100
+check_iteration = 20
+overlapping_factor = .75
+#num_threads =
+#we split up the energy landscape into subwindows, with adjacent subwindows overlapping. Then, we spawn m different threads for each subwindo
+#These m different threads each independently run WL on their own bins and histograms, over the subwindow they're working on
+#Once all the threads for a subwindow have finished an iteration, g(E) is averaged across threads
+#After a certain number of monte carlo steps, randomly swap walkers i and j
+#maintain a map from subwindow to random walker
 bins = []
 #splits energy landscape into bins
 i = min_energy
-while i <= max_energy:
+while i < max_energy:
     bins.append((i, i+max_energy/num_bins))
     i += max_energy/num_bins
 
@@ -119,15 +127,14 @@ def flat():
     for b in histogram:
         mean_height += histogram[b]
         min_height = min(min_height, histogram[b])
-   
+
+
     mean_height = mean_height/(len(histogram)*1.0)
-   
+
     if mean_height*.9 > min_height:
         return False
 
     return True
-
-
 
 def save_dict(obj, name):
     with open(name + '.pkl', 'wb') as f:
@@ -163,11 +170,12 @@ def wang_landau(alpha, epsilon):
         if iteration % check_iteration == 0:
             if flat():
                 alpha = math.sqrt(alpha)
+                print("Resetting alpha to: %f" % alpha)
                 reset()
     
         iteration += 1
 
 alpha = math.e
-epsilon = .0000003
+epsilon = alpha - 1.001
 wang_landau(alpha, epsilon)
-save_obj(g_map, 'densities')
+save_dict(g_map, 'densities')
