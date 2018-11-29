@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
-import numpy as np
 from sklearn.externals import joblib
 import os
 
@@ -309,7 +308,10 @@ if __name__ == "__main__":
             count += 1
     file_name = file_name + str(count)
 
-    joblib.dump(G3, os.path.join(os.path.abspath(os.path.curdir), file_name))
+    input = input("Save the graph? y/n: ")
+    if input == 'y':
+        joblib.dump(G3, os.path.join(os.path.abspath(os.path.curdir), file_name))
+
     """testing with small graph discussed"""
     # G = nx.Graph()
     # for i in range(8):
