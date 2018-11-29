@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import random
 import numpy as np
+from sklearn.externals import joblib
+import os
 
 
 class Merger(object):
@@ -219,6 +221,7 @@ class Merger(object):
         plt.hist(degree_list, bins=bin)
         if log_scale:
             plt.semilogy()
+            plt.semilogx()
         plt.xlabel('degree')
         plt.ylabel('# nodes')
         plt.title('degree_dist')
@@ -243,6 +246,7 @@ class Merger(object):
         plt.hist(flattened_list,bins=bin)
         if log_scale:
             plt.semilogy()
+            plt.semilogx()
         plt.xlabel('# shortest path length')
         plt.ylabel('# connections')
         plt.title('spd_dist')
@@ -262,7 +266,9 @@ class Merger(object):
 
 
 if __name__ == "__main__":
-    G = nx.random_geometric_graph(1000, 0.1)
+    node_num = 10000
+    graph_float = 0.02
+    G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
@@ -276,18 +282,26 @@ if __name__ == "__main__":
 
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     print(Merger.plot_degree(G3.graph, degree_log))
     print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     print(Merger.plot_degree(G3.graph, degree_log))
     print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     print(Merger.plot_degree(G3.graph, degree_log))
     print(Merger.plot_spd(G3.graph, spd_log))
 
+    file_name = str(node_num)+"_"+str(graph_float)
+    if file_name in os.listdir(os.path.curdir):
+        count = 1
+        file_name = str(node_num)+"_"+str(graph_float) + str(count)
+        while file_name in os.listdir(os.path.curdir):
+            count += 1
+
+    joblib.dump(G3, os.path.join(os.path.abspath(os.path.curdir), file_name))
     """testing with small graph discussed"""
     # G = nx.Graph()
     # for i in range(8):
