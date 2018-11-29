@@ -21,12 +21,12 @@ sigma_beta = 0.02
 sigma_gamma = 0.02
 
 # parameters for each agent
-agent_alpha_list = np.zeros(10000)
-agent_beta_list = np.zeros(10000)
-agent_gamma_list = np.zeros(10000)
+agent_alpha_list = np.zeros(100000)
+agent_beta_list = np.zeros(100000)
+agent_gamma_list = np.zeros(100000)
 
 # parameters for each class
-N_list = [0.6, 0.2, 0.1, 0.05, 0.05] # class composition of whole population
+N_list = [0.6, 0.3, 0.05, 0.03, 0.02] # class composition of whole population
 alpha_list = [93.4, 95.8, 100, 100, 100]
 beta_list = [3.87, 3.67, 4, 4, 4]
 gamma_list = [2.17, 4.34, 5, 5, 5]
@@ -34,18 +34,18 @@ gamma_list = [2.17, 4.34, 5, 5, 5]
 num_levels = 100 # number of salary levels
 count_levels_list = np.zeros((100, 5)) # number of agents for given level and class
 count_levels_combined = np.zeros(100) # number of all agents for given level
-num_agents = 10000
-agent_levels_list = np.zeros(10000) # which level the agent is at
+num_agents = 100000
+agent_levels_list = np.zeros(100000) # which level the agent is at
 num_classes = 5 
-agent_classes_list = np.zeros(10000) # which level the agent belongs to
+agent_classes_list = np.zeros(100000) # which level the agent belongs to
 
 # for level -> salary value
 s_min = 20000.0
 s_max = 3000000.0
 
 # stopping conditions
-epsilon = 30000
-epoch_max = 40
+epsilon = 140000
+epoch_max = 50
 
 
 # level -> salary value
@@ -55,7 +55,7 @@ def level_to_salary(x):
 
 def setup():
     # assign each agent to a class
-    agent_classes_list[:] = np.random.choice(5, 10000, p=N_list)
+    agent_classes_list[:] = np.random.choice(5, num_agents, p=N_list)
     
     mean = num_levels / 2
     for i in range(num_agents):
