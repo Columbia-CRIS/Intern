@@ -138,6 +138,7 @@ class Merger(object):
         # pos[center] = [new_node_x, new_node_y]
         # nx.set_node_attributes(G, pos, "pos")
         clique.remove(center)
+        cont_nodes = []
         for node in clique:
             # print(center, node)
             if node == center:
@@ -145,10 +146,11 @@ class Merger(object):
             try:
                 self.graph = nx.contracted_nodes(self.graph, center, node, self_loops=False)
                 self.s_node[center] += self.s_node[node]
-                self.node_tree[center].append(self.node_tree[node][0])
+                cont_nodes.append(node)
             except nx.exception.NetworkXError:
                 pass  # print("error: ", e)
                 # print(center, node)
+        self.node_tree[center].append(cont_nodes)
         return self.graph
 
     def cont_all_stars_iterative(self, min_neighbors=10):
@@ -274,10 +276,15 @@ class Merger(object):
             b_count += 1
         return result_bin
 
+    def print_cont_nodes(self, level=-1):
+        for key in self.node_tree_level[level].keys():
+            if len(self.node_tree[key]) > 3:
+                print(str(key) + ": " + str(self.node_tree[key]))
+
 
 if __name__ == "__main__":
-    node_num = 10000
-    graph_float = 0.02
+    node_num = 1000
+    graph_float = 0.07
     G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
