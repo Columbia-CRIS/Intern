@@ -17,7 +17,9 @@ class Merger(object):
         self.min_coloring = 3
         self.node_tree = {}
         for node in G.nodes:
-            self.node_tree[node] = node
+            self.node_tree[node] = [node]
+        self.node_tree_level = []
+        self.node_tree_level.append(self.node_tree)
 
     @staticmethod
     def random_color():
@@ -110,6 +112,7 @@ class Merger(object):
             cliques.sort(key=len, reverse=True)
             # print(cliques)
         self.level.append(self.graph)
+        self.node_tree_level.append(self.node_tree)
         return self.graph
 
     def contract_clique(self, clique):
@@ -142,7 +145,8 @@ class Merger(object):
             try:
                 self.graph = nx.contracted_nodes(self.graph, center, node, self_loops=False)
                 self.s_node[center] += self.s_node[node]
-            except nx.exception.NetworkXError as e:
+                self.node_tree[center].append(self.node_tree[node][0])
+            except nx.exception.NetworkXError:
                 pass  # print("error: ", e)
                 # print(center, node)
         return self.graph
@@ -263,17 +267,17 @@ class Merger(object):
     def get_bins(data):
         start = min(data) - 0.5
         end = max(data) + 0.5
-        count = start
-        bin = []
-        while count <= end:
-            bin.append(count)
-            count += 1
-        return bin
+        b_count = start
+        result_bin = []
+        while b_count <= end:
+            result_bin.append(b_count)
+            b_count += 1
+        return result_bin
 
 
 if __name__ == "__main__":
-    node_num = 1000
-    graph_float = 0.1
+    node_num = 10000
+    graph_float = 0.02
     G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
