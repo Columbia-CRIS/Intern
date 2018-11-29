@@ -24,7 +24,7 @@ class Merger(object):
         """selecting random color in hex"""
         hex_digits = [0, 0, 0, 0, 0, 0]
         for i in range(len(hex_digits)):
-            hex_digits[i] = random.randint(0,15)
+            hex_digits[i] = random.randint(0, 15)
         result = "#"
         for dig in hex_digits:
             result = result + hex(dig).split('x')[-1]
@@ -73,7 +73,7 @@ class Merger(object):
                 p[value] = color
                 for node in nx.all_neighbors(self.graph, value):
                     p[node] = color
-            else :
+            else:
                 p[value] = 'grey'
         return p
 
@@ -143,7 +143,7 @@ class Merger(object):
                 self.graph = nx.contracted_nodes(self.graph, center, node, self_loops=False)
                 self.s_node[center] += self.s_node[node]
             except nx.exception.NetworkXError as e:
-                pass # print("error: ", e)
+                pass  # print("error: ", e)
                 # print(center, node)
         return self.graph
 
@@ -195,7 +195,7 @@ class Merger(object):
         for node in G.nodes:
             node_size_list.append(node_size_dict[node])
 
-        plt.figure(1,figsize=(8, 8))
+        plt.figure(1, figsize=(8, 8))
         plt.subplot()
         nx.draw_networkx_edges(G, pos, nodelist=[ncenter], alpha=0.5)
         nx.draw_networkx_nodes(G, pos, nodelist=G.nodes,
@@ -217,7 +217,7 @@ class Merger(object):
         degree_dict = {}
         degree_list = []
         for node in G.nodes:
-            degree = len(list(nx.neighbors(G,node)))
+            degree = len(list(nx.neighbors(G, node)))
             degree_list.append(degree)
             try:
                 degree_dict[degree] += 1
@@ -249,7 +249,7 @@ class Merger(object):
                     shortest_path_dict[length] = 1
         flattened_list = [y for x in shortest_paths for y in x]
         bin = Merger.get_bins(flattened_list)
-        plt.hist(flattened_list,bins=bin)
+        plt.hist(flattened_list, bins=bin)
         if log_scale:
             plt.semilogy()
             plt.semilogx()
@@ -261,13 +261,13 @@ class Merger(object):
 
     @staticmethod
     def get_bins(data):
-        start = min(data)-0.5
-        end = max(data)+0.5
+        start = min(data) - 0.5
+        end = max(data) + 0.5
         count = start
         bin = []
         while count <= end:
             bin.append(count)
-            count+=1
+            count += 1
         return bin
 
 
@@ -278,7 +278,6 @@ if __name__ == "__main__":
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
-
 
     degree_log = True
     spd_log = False
@@ -300,10 +299,10 @@ if __name__ == "__main__":
     # print(Merger.plot_degree(G3.graph, degree_log))
     # print(Merger.plot_spd(G3.graph, spd_log))
 
-    file_name = str(node_num)+"_"+str(graph_float)
+    file_name = str(node_num) + "_" + str(graph_float)
     count = 1
     if file_name in os.listdir(os.path.curdir):
-        file_name_tmp = str(node_num)+"_"+str(graph_float) + str(count)
+        file_name_tmp = str(node_num) + "_" + str(graph_float) + str(count)
         while file_name_tmp in os.listdir(os.path.curdir):
             count += 1
     file_name = file_name + str(count)
