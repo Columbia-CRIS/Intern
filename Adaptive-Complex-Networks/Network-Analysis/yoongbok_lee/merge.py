@@ -276,9 +276,9 @@ class Merger(object):
             b_count += 1
         return result_bin
 
-    def print_cont_nodes(self, level=-1):
+    def print_concat_nodes(self, level=-1):
         for key in self.node_tree_level[level].keys():
-            if len(self.node_tree[key]) > 3:
+            if len(self.node_tree[key]) > 1:
                 print(str(key) + ": " + str(self.node_tree[key]))
 
 

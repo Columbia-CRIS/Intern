@@ -40,3 +40,5 @@ for i in range(len(e_list_list)):
     plt.subplot()
     nx.draw(g_cont.graph, with_labels=True)
     plt.show()
+    input()
+    g_cont.print_concat_nodes()
