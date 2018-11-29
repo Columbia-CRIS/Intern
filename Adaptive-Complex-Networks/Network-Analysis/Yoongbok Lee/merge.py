@@ -248,8 +248,8 @@ class Merger(object):
                 except KeyError:
                     shortest_path_dict[length] = 1
         flattened_list = [y for x in shortest_paths for y in x]
-        bin = Merger.get_bins(flattened_list)
-        plt.hist(flattened_list, bins=bin)
+        result_bin = Merger.get_bins(flattened_list)
+        plt.hist(flattened_list, bins=result_bin)
         if log_scale:
             plt.semilogy()
             plt.semilogx()
