@@ -14,38 +14,44 @@ import random
 import math
 
 
-mode = 'random' # either 'constant' or 'random' parameters
+# basic settings
+num_levels = 100 # number of salary levels
+num_agents = 100000
+num_classes = 5 
+
+# parameter init mode, either 'constant' or 'random'
+mode = 'constant'
+
 # standard dev. under random mode
-sigma_alpha = 0.2
-sigma_beta = 0.02
-sigma_gamma = 0.02
+sigma_alpha = 1.0
+sigma_beta = 0.2
+sigma_gamma = 0.2
 
 # parameters for each agent
-agent_alpha_list = np.zeros(100000)
-agent_beta_list = np.zeros(100000)
-agent_gamma_list = np.zeros(100000)
+agent_alpha_list = np.zeros(num_agents)
+agent_beta_list = np.zeros(num_agents)
+agent_gamma_list = np.zeros(num_agents)
 
 # parameters for each class
-N_list = [0.6, 0.3, 0.05, 0.03, 0.02] # class composition of whole population
-alpha_list = [93.4, 95.8, 100, 100, 100]
-beta_list = [3.87, 3.67, 4, 4, 4]
-gamma_list = [2.17, 4.34, 5, 5, 5]
-
-num_levels = 100 # number of salary levels
-count_levels_list = np.zeros((100, 5)) # number of agents for given level and class
-count_levels_combined = np.zeros(100) # number of all agents for given level
-num_agents = 100000
-agent_levels_list = np.zeros(100000) # which level the agent is at
-num_classes = 5 
-agent_classes_list = np.zeros(100000) # which level the agent belongs to
+N_list = [0.5, 0.3, 0.15, 0.03, 0.02] # class composition of whole population
+alpha_list = [93.4, 95.8, 97, 99, 100]
+beta_list = [3.87, 3.67, 3.67, 3.67, 4]
+gamma_list = [2.17, 4.34, 4.34, 4.34, 1]
 
 # for level -> salary value
 s_min = 20000.0
 s_max = 3000000.0
 
 # stopping conditions
-epsilon = 140000
+epsilon = 10000
 epoch_max = 50
+
+
+# === DO NOT MODIFY THIS  ===
+count_levels_list = np.zeros((num_levels, num_classes)) # number of agents by level and class
+count_levels_combined = np.zeros(num_levels) # number of all agents by level
+agent_levels_list = np.zeros(num_agents) # which level the agent is at
+agent_classes_list = np.zeros(num_agents) # which level the agent belongs to
 
 
 # level -> salary value
@@ -53,6 +59,7 @@ def level_to_salary(x):
     return s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)
 
 
+# initialze global variables, including classes and parameter lists
 def setup():
     # assign each agent to a class
     agent_classes_list[:] = np.random.choice(5, num_agents, p=N_list)
@@ -93,8 +100,12 @@ def turtle():
         s_target = level_to_salary(level_target + 1)
         s_self = level_to_salary(level_self + 1)
         
-        num_target = count_levels_combined[level_target]
-        num_self = count_levels_combined[level_self]
+        # Note: agents should make decisions one by one, not all at once as 
+        # previously programmed. Otherwise, the program will produce wrong 
+        # results. Thus, we use count_levels_combined_copy instead of 
+        # count_levels_combined.
+        num_target = count_levels_combined_copy[level_target]
+        num_self = count_levels_combined_copy[level_self]
         
         alpha, beta, gamma = agent_alpha_list[i], agent_beta_list[i], agent_gamma_list[i]
         
@@ -107,7 +118,6 @@ def turtle():
         payoff_self = alpha * math.log(s_self)
         payoff_self -= beta * math.log(s_self) ** 2
         payoff_self -= gamma * math.log(num_self + 1.0 / num_agents)
-        
         
         if payoff_target > payoff_self:
             # move agent from self to target
@@ -125,18 +135,25 @@ def turtle():
     
     return loss
 
-    
+
+# show the agent distributions on a plot
 def plot():
     x = np.linspace(0, num_levels, num_levels)
     for i in range(num_classes):
-        plt.plot(x, count_levels_list[:, i], marker='')
+        #plt.plot(x, count_levels_list[:, i], marker='') # just a different style
+        plt.bar(x, count_levels_list[:, i], alpha=0.5)
     
-    #plt.plot(x, count_levels_combined, label="total", marker='', color='black') # total
+    # Uncomment the line below to show a curve of all classes combined.
+    plt.plot(x, count_levels_combined, label="total", marker='', color='black', linewidth=0.5)
+    
     plt.show()
+
 
 if __name__ == '__main__':
     setup()
     print("Started... ")
+    plot() #initial
+    
     loss = epsilon + 1
     epoch = 0
     while loss > epsilon and epoch < epoch_max:
