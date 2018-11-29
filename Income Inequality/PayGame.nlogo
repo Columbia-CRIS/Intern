@@ -136,9 +136,13 @@ to imitate
 
 
     ;; compare, if target has a higher payoff, switch
-    let a1 (random-normal alpha 0.1)
-    let b1 (random-normal beta 0.1)
-    let g1 (random-normal gamma 0.1)
+    ;;let a1 (random-normal alpha 0.1)
+    ;;let b1 (random-normal beta 0.1)
+    ;;let g1 (random-normal gamma 0.1)
+
+    let a1 alpha
+    let b1 beta
+    let g1 gamma
 
     let payoff-target a1 * (ln s-target) - b1 * (ln s-target) ^ 2 - g1 * (ln (num-target + 1 / num-agents))
     let payoff-self a1 * (ln s-self) - b1 * (ln s-self) ^ 2 - g1 * (ln num-self)
@@ -438,7 +442,7 @@ INPUTBOX
 98
 193
 N-0
-0.95
+0.5
 1
 0
 Number
@@ -449,7 +453,7 @@ INPUTBOX
 189
 194
 N-1
-0.05
+0.5
 1
 0
 Number
