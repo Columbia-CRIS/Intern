@@ -16,6 +16,9 @@ class Merger(object):
         self.level = [self.graph]
         nx.set_node_attributes(self.graph, self.s_node, name="node_size_concat")
         self.min_coloring = 3
+        self.node_tree = {}
+        for node in G.nodes:
+            self.node_tree[node] = node
 
     @staticmethod
     def random_color():
@@ -31,29 +34,29 @@ class Merger(object):
         return result
 
     @staticmethod
-    def color_cliques(G, min_node_num=3):
+    def color_cliques(G, min_node_num=4):
         """hubs(cliques) are complete subgraphs of G"""
         p_list = list(G.nodes)
         p = {}
         for thing in p_list:
-            p[thing] = "#DDDDDD"
+            p[thing] = "#000000"
 
         cliques = list(nx.algorithms.find_cliques(G))
         # order cliques in descending order depending on size
+        for clique in cliques:
+            clique.sort()
+        cliques.sort()
         cliques.sort(key=len, reverse=True)
 
         for clique in cliques:
-            clique.sort()
-
-        for clique in cliques:
-            if len(clique) > min_node_num:
+            if len(clique) >= min_node_num:
                 clique_color = Merger.random_color()
                 for node in clique:
                     p[node] = clique_color
-                for node in clique:
+                for node2 in clique:
                     for clique2 in cliques:
-                        if node in clique2:
-                            cliques.remove(clique2)
+                        if node2 in clique2 and clique != clique2:
+                            clique2.remove(node2)
         return p
 
     def color_neighbors(self):
@@ -89,7 +92,11 @@ class Merger(object):
 
     def cont_all_cliques(self, min_clique_node=4):
         cliques = list(nx.algorithms.find_cliques(self.graph))
+        for clique in cliques:
+            clique.sort()
+        cliques.sort()
         cliques.sort(key=len, reverse=True)
+        # print(cliques)
         while len(cliques) > 0 and len(cliques[0]) >= min_clique_node:
             clique = cliques[0]
             # print(clique)
@@ -266,8 +273,8 @@ class Merger(object):
 
 
 if __name__ == "__main__":
-    node_num = 10000
-    graph_float = 0.02
+    node_num = 1000
+    graph_float = 0.1
     G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
@@ -277,29 +284,30 @@ if __name__ == "__main__":
     degree_log = True
     spd_log = False
 
-    print(Merger.plot_degree(G, degree_log))
-    print(Merger.plot_spd(G, spd_log))
+    # print(Merger.plot_degree(G, degree_log))
+    # print(Merger.plot_spd(G, spd_log))
 
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    print(Merger.plot_degree(G3.graph, degree_log))
-    print(Merger.plot_spd(G3.graph, spd_log))
+    # print(Merger.plot_degree(G3.graph, degree_log))
+    # print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    print(Merger.plot_degree(G3.graph, degree_log))
-    print(Merger.plot_spd(G3.graph, spd_log))
+    # print(Merger.plot_degree(G3.graph, degree_log))
+    # print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    print(Merger.plot_degree(G3.graph, degree_log))
-    print(Merger.plot_spd(G3.graph, spd_log))
+    # print(Merger.plot_degree(G3.graph, degree_log))
+    # print(Merger.plot_spd(G3.graph, spd_log))
 
     file_name = str(node_num)+"_"+str(graph_float)
+    count = 1
     if file_name in os.listdir(os.path.curdir):
-        count = 1
-        file_name = str(node_num)+"_"+str(graph_float) + str(count)
-        while file_name in os.listdir(os.path.curdir):
+        file_name_tmp = str(node_num)+"_"+str(graph_float) + str(count)
+        while file_name_tmp in os.listdir(os.path.curdir):
             count += 1
+    file_name = file_name + str(count)
 
     joblib.dump(G3, os.path.join(os.path.abspath(os.path.curdir), file_name))
     """testing with small graph discussed"""
