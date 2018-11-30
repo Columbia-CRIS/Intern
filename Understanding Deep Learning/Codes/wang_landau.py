@@ -61,7 +61,7 @@ min_energy = 0
 start = min_energy
 max_energy = 10 
 check_iteration = 20
-num_flat = 2
+num_flat = 0
 overlapping_factor = .75
 #we split up the energy landscape into subwindows, with adjacent subwindows overlapping. Then, we spawn m different threads for each subwindo
 #These m different threads each independently run WL on their own bins and histograms, over the subwindow they're working on
@@ -77,6 +77,7 @@ alpha_init = 1.002
 epsilon =  .002
 alpha_map = {}
 densities = {}
+density_counts = {}
 #locks = {}
 
 #splits energy landscape into bins
@@ -97,6 +98,8 @@ def init():
         e_range = t[1] - t[0]
         while i < t[1]:
             bins.append((i, i+e_range/num_bins))
+            densities[(i, i+e_range/num_bins)] = 0
+            density_counts[(i, i+e_range/num_bins)] = 0
             i += e_range/(num_bins*1.0)
                 
         thread_map[t] = []
@@ -123,7 +126,12 @@ def init():
     
 def global_wanglandau(subwindow, cur_thread):
     wang_landau(cur_thread, subwindow)
-    densities[subwindow] = bins_to_globalmap[subwindow][cur_thread]
+    for l_bin in globals_to_locals[subwindow]:
+        densities[l_bin] += bins_to_globalmap[subwindow][cur_thread][l_bin]
+        density_counts[l_bin] += 1
+
+    for l_bin in densities:
+        densities[l_bin] /= density_counts[l_bin] > 0 if density_counts[l_bin] > 0 else 1
     
 #resets histogram when flat
 def reset(histogram):
@@ -239,9 +247,10 @@ def wang_landau(cur_thread, subwindow):
     
         iteration += 1
     print("Finished running WL: %s %f %f " % (cur_thread, subwindow[0], subwindow[1]))
-#init()
-#wang_landau(alpha, epsilon)
-#save_dict(densities, 'densities_parallel')
-d_map = load_dict('densities')
+init()
+wang_landau(alpha, epsilon)
+save_dict(densities, 'densities_parallel')
+d_map = load_dict('densities_parallel')
 for v in d_map:
+    print(v)
     print(d_map[v])
