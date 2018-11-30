@@ -36,9 +36,10 @@ for i in range(len(e_list_list)):
     plt.show()
 
     g_cont = Merger(g)
+    print(nx.global_efficiency(g))
     g_cont.cont_all_cliques(min_clique_node=3)
+    print(nx.global_efficiency(g_cont.graph))
     plt.subplot()
     nx.draw(g_cont.graph, with_labels=True)
     plt.show()
-    input()
-    g_cont.print_concat_nodes()
+    # g_cont.print_concat_nodes()
