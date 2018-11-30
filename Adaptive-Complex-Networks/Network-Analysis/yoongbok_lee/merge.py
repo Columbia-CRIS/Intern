@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
-import numpy as np
+from sklearn.externals import joblib
+import os
 
 
 class Merger(object):
@@ -14,13 +15,18 @@ class Merger(object):
         self.level = [self.graph]
         nx.set_node_attributes(self.graph, self.s_node, name="node_size_concat")
         self.min_coloring = 3
+        self.node_tree = {}
+        for node in G.nodes:
+            self.node_tree[node] = [node]
+        self.node_tree_level = []
+        self.node_tree_level.append(self.node_tree)
 
     @staticmethod
     def random_color():
         """selecting random color in hex"""
         hex_digits = [0, 0, 0, 0, 0, 0]
         for i in range(len(hex_digits)):
-            hex_digits[i] = random.randint(0,15)
+            hex_digits[i] = random.randint(0, 15)
         result = "#"
         for dig in hex_digits:
             result = result + hex(dig).split('x')[-1]
@@ -29,29 +35,29 @@ class Merger(object):
         return result
 
     @staticmethod
-    def color_cliques(G, min_node_num=3):
+    def color_cliques(G, min_node_num=4):
         """hubs(cliques) are complete subgraphs of G"""
         p_list = list(G.nodes)
         p = {}
         for thing in p_list:
-            p[thing] = "#DDDDDD"
+            p[thing] = "#000000"
 
         cliques = list(nx.algorithms.find_cliques(G))
         # order cliques in descending order depending on size
+        for clique in cliques:
+            clique.sort()
+        cliques.sort()
         cliques.sort(key=len, reverse=True)
 
         for clique in cliques:
-            clique.sort()
-
-        for clique in cliques:
-            if len(clique) > min_node_num:
+            if len(clique) >= min_node_num:
                 clique_color = Merger.random_color()
                 for node in clique:
                     p[node] = clique_color
-                for node in clique:
+                for node2 in clique:
                     for clique2 in cliques:
-                        if node in clique2:
-                            cliques.remove(clique2)
+                        if node2 in clique2 and clique != clique2:
+                            clique2.remove(node2)
         return p
 
     def color_neighbors(self):
@@ -69,7 +75,7 @@ class Merger(object):
                 p[value] = color
                 for node in nx.all_neighbors(self.graph, value):
                     p[node] = color
-            else :
+            else:
                 p[value] = 'grey'
         return p
 
@@ -87,7 +93,11 @@ class Merger(object):
 
     def cont_all_cliques(self, min_clique_node=4):
         cliques = list(nx.algorithms.find_cliques(self.graph))
+        for clique in cliques:
+            clique.sort()
+        cliques.sort()
         cliques.sort(key=len, reverse=True)
+        # print(cliques)
         while len(cliques) > 0 and len(cliques[0]) >= min_clique_node:
             clique = cliques[0]
             # print(clique)
@@ -102,6 +112,7 @@ class Merger(object):
             cliques.sort(key=len, reverse=True)
             # print(cliques)
         self.level.append(self.graph)
+        self.node_tree_level.append(self.node_tree)
         return self.graph
 
     def contract_clique(self, clique):
@@ -127,6 +138,7 @@ class Merger(object):
         # pos[center] = [new_node_x, new_node_y]
         # nx.set_node_attributes(G, pos, "pos")
         clique.remove(center)
+        cont_nodes = []
         for node in clique:
             # print(center, node)
             if node == center:
@@ -134,9 +146,11 @@ class Merger(object):
             try:
                 self.graph = nx.contracted_nodes(self.graph, center, node, self_loops=False)
                 self.s_node[center] += self.s_node[node]
-            except nx.exception.NetworkXError as e:
-                pass # print("error: ", e)
+                cont_nodes.append(node)
+            except nx.exception.NetworkXError:
+                pass  # print("error: ", e)
                 # print(center, node)
+        self.node_tree[center].append(cont_nodes)
         return self.graph
 
     def cont_all_stars_iterative(self, min_neighbors=10):
@@ -187,7 +201,7 @@ class Merger(object):
         for node in G.nodes:
             node_size_list.append(node_size_dict[node])
 
-        plt.figure(1,figsize=(8, 8))
+        plt.figure(1, figsize=(8, 8))
         plt.subplot()
         nx.draw_networkx_edges(G, pos, nodelist=[ncenter], alpha=0.5)
         nx.draw_networkx_nodes(G, pos, nodelist=G.nodes,
@@ -209,7 +223,7 @@ class Merger(object):
         degree_dict = {}
         degree_list = []
         for node in G.nodes:
-            degree = len(list(nx.neighbors(G,node)))
+            degree = len(list(nx.neighbors(G, node)))
             degree_list.append(degree)
             try:
                 degree_dict[degree] += 1
@@ -219,6 +233,7 @@ class Merger(object):
         plt.hist(degree_list, bins=bin)
         if log_scale:
             plt.semilogy()
+            plt.semilogx()
         plt.xlabel('degree')
         plt.ylabel('# nodes')
         plt.title('degree_dist')
@@ -239,10 +254,11 @@ class Merger(object):
                 except KeyError:
                     shortest_path_dict[length] = 1
         flattened_list = [y for x in shortest_paths for y in x]
-        bin = Merger.get_bins(flattened_list)
-        plt.hist(flattened_list,bins=bin)
+        result_bin = Merger.get_bins(flattened_list)
+        plt.hist(flattened_list, bins=result_bin)
         if log_scale:
             plt.semilogy()
+            plt.semilogx()
         plt.xlabel('# shortest path length')
         plt.ylabel('# connections')
         plt.title('spd_dist')
@@ -251,42 +267,60 @@ class Merger(object):
 
     @staticmethod
     def get_bins(data):
-        start = min(data)-0.5
-        end = max(data)+0.5
-        count = start
-        bin = []
-        while count <= end:
-            bin.append(count)
-            count+=1
-        return bin
+        start = min(data) - 0.5
+        end = max(data) + 0.5
+        b_count = start
+        result_bin = []
+        while b_count <= end:
+            result_bin.append(b_count)
+            b_count += 1
+        return result_bin
+
+    def print_concat_nodes(self, level=-1):
+        for key in self.node_tree_level[level].keys():
+            if len(self.node_tree[key]) > 1:
+                print(str(key) + ": " + str(self.node_tree[key]))
 
 
 if __name__ == "__main__":
-    G = nx.random_geometric_graph(1000, 0.1)
+    node_num = 1000
+    graph_float = 0.07
+    G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
 
-
     degree_log = True
     spd_log = False
 
-    print(Merger.plot_degree(G, degree_log))
-    print(Merger.plot_spd(G, spd_log))
+    # print(Merger.plot_degree(G, degree_log))
+    # print(Merger.plot_spd(G, spd_log))
 
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
-    print(Merger.plot_degree(G3.graph, degree_log))
-    print(Merger.plot_spd(G3.graph, spd_log))
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
+    # print(Merger.plot_degree(G3.graph, degree_log))
+    # print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
-    print(Merger.plot_degree(G3.graph, degree_log))
-    print(Merger.plot_spd(G3.graph, spd_log))
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
+    # print(Merger.plot_degree(G3.graph, degree_log))
+    # print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
-    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=True)
-    print(Merger.plot_degree(G3.graph, degree_log))
-    print(Merger.plot_spd(G3.graph, spd_log))
+    Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
+    # print(Merger.plot_degree(G3.graph, degree_log))
+    # print(Merger.plot_spd(G3.graph, spd_log))
+
+    file_name = str(node_num) + "_" + str(graph_float)
+    count = 1
+    if file_name in os.listdir(os.path.curdir):
+        file_name_tmp = str(node_num) + "_" + str(graph_float) + str(count)
+        while file_name_tmp in os.listdir(os.path.curdir):
+            count += 1
+    file_name = file_name + str(count)
+
+    input = input("Save the graph? y/n: ")
+    if input == 'y':
+        joblib.dump(G3, os.path.join(os.path.abspath(os.path.curdir), file_name))
 
     """testing with small graph discussed"""
     # G = nx.Graph()
