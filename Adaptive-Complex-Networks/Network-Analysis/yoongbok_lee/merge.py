@@ -3,6 +3,9 @@ import networkx as nx
 import random
 from sklearn.externals import joblib
 import os
+import evaluator
+import numpy as np
+import graph
 
 
 class Merger(object):
@@ -282,10 +285,19 @@ class Merger(object):
                 print(str(key) + ": " + str(self.node_tree[key]))
 
 
+def graph_from_grpah(G):
+    """Graph from networkx grpah"""
+    g = graph.Graph(len(G.nodes), list(G.edges), False, False)
+    return g
+
+
 if __name__ == "__main__":
     node_num = 1000
     graph_float = 0.07
     G = nx.random_geometric_graph(node_num, graph_float)
+    # G = nx.MultiGraph(G)
+    print(nx.global_efficiency(G))
+    print(evaluator.nx_robustness(graph_from_grpah(G)))
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
@@ -298,14 +310,21 @@ if __name__ == "__main__":
 
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
+    print(nx.global_efficiency(G3.graph))
+    print(evaluator.nx_robustness(graph_from_grpah(G3.graph)))
+
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     # print(Merger.plot_degree(G3.graph, degree_log))
     # print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
+    print(nx.global_efficiency(G3.graph))
+    print(evaluator.nx_robustness(graph_from_grpah(G3.graph)))
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     # print(Merger.plot_degree(G3.graph, degree_log))
     # print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
+    print(nx.global_efficiency(G3.graph))
+    print(evaluator.nx_robustness(graph_from_grpah(G3.graph)))
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     # print(Merger.plot_degree(G3.graph, degree_log))
     # print(Merger.plot_spd(G3.graph, spd_log))
