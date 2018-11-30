@@ -52,12 +52,13 @@ y_final = np.append(y_train, y_test, axis = 0)
 #energy is defined as cross entropy over entire training set 
 g_map = {} #map from bin endpoints to densities
 histogram = {} #map from bin endpoints to counts
-num_bins = 1 #to check for convergence
+num_bins = 2 #to check for convergence
 
 min_energy = 0
-max_energy = 20.0 #upper bound for bin - 
+max_energy = 10.0 #upper bound for bin - 
 flatness = 0.9
 check_iteration = 20
+num_flat = 5
 overlapping_factor = .75
 #num_threads =
 #we split up the energy landscape into subwindows, with adjacent subwindows overlapping. Then, we spawn m different threads for each subwindo
@@ -121,6 +122,7 @@ def update_histogram(energy):
     histogram[endpts] += 1
 
 def flat():
+    flat_count = 0
     mean_height = 0
     min_height = sys.maxsize
    
@@ -128,10 +130,13 @@ def flat():
         mean_height += histogram[b]
         min_height = min(min_height, histogram[b])
 
-
     mean_height = mean_height/(len(histogram)*1.0)
 
-    if mean_height*.9 > min_height:
+    for b in histogram:
+        if histogram[b] <= .9*mean_height:
+            flat_count+=1
+
+    if mean_height*.9 > min_height and flat_count > num_flat:
         return False
 
     return True
