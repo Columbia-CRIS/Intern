@@ -23,9 +23,9 @@ num_classes = 5
 mode = 'constant'
 
 # standard dev. under random mode
-sigma_alpha = 1.0
-sigma_beta = 0.2
-sigma_gamma = 0.2
+sigma_alpha = 0.2
+sigma_beta = 0.01
+sigma_gamma = 0.01
 
 # parameters for each agent
 agent_alpha_list = np.zeros(num_agents)
@@ -141,7 +141,7 @@ def plot():
     x = np.linspace(0, num_levels, num_levels)
     for i in range(num_classes):
         #plt.plot(x, count_levels_list[:, i], marker='') # just a different style
-        plt.bar(x, count_levels_list[:, i], alpha=0.5)
+        plt.bar(x, count_levels_list[:, i], alpha=0.45)
     
     # Uncomment the line below to show a curve of all classes combined.
     plt.plot(x, count_levels_combined, label="total", marker='', color='black', linewidth=0.5)
