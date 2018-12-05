@@ -413,31 +413,56 @@ def get_robustness_list(M, steps=3):
     return r
 
 
+# for multiprocessing
+def a_e_l(i, M, e_d, steps=3):
+    e_d[i] = get_efficiency_list(M, steps)
+    print(e_d, "done!")
+
+
+# for multiprocessing
+def a_r_l(i, M, r_d, steps=3):
+    r_d[i] = get_robustness_list(M, steps)
+    print(r_d, "donezoed!")
+
+
 if __name__ == "__main__":
-    import threading
+    from multiprocessing import Process
+    import multiprocessing
+
+    manager = multiprocessing.Manager()
+    e_dict = manager.dict()
+    r_dict = manager.dict()
 
     graphs = []
-    for i in range(10):
-        tmp_g = nx.random_geometric_graph((i + 1) * 100, min(0.5, 1.2 / (i + 1)))
+    for i in range(20):
+        y_f = 0.05992949 + (258735.2 - 0.05992949) / (1 + (((i + 1) * 100) / 3.673678e-10) ** 0.5484871)
+        tmp_g = nx.random_geometric_graph((i + 1) * 100, y_f)
         tmp_g = Merger(tmp_g)
         graphs.append(tmp_g)
-    e_list = []
-    for j in range(10):
-        e_list.append(get_efficiency_list(graphs[j], steps=3))
 
-    r_list = []
-    for j in range(10):
-        r_list.append(get_robustness_list(graphs[j], steps=3))
+    for j in range(20):
+        pe = Process(target=a_e_l, args=(j, graphs[j], e_dict))
+        pe.start()
 
+    for m in range(20):
+        p = Process(target=a_r_l, args=(m, graphs[m], r_dict))
+        p.start()
+
+    p.join()
+    r_list = list(r_dict.values())
+
+    u = linspace(0, 3, 3)
+    for l in range(20):
+        plt.plot(u, r_list[l], Merger.random_color())
+    plt.show()
+
+    pe.join()
+    e_list = list(e_dict.values())
     t = linspace(0, 3, 3)
-    for k in range(10):
+    for k in range(20):
         plt.plot(t, e_list[k], Merger.random_color())
     plt.show()
 
-    u = linspace(0, 3, 3)
-    for l in range(10):
-        plt.plot(u, r_list[l], Merger.random_color())
-    plt.show()
     """
     graphs = []
     for i in range(10):
