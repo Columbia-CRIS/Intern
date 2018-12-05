@@ -6,6 +6,8 @@ import os
 import evaluator
 import numpy as np
 import graph
+import math
+from numpy import linspace
 
 
 class Merger(object):
@@ -291,13 +293,37 @@ def graph_from_grpah(G):
     return g
 
 
-if __name__ == "__main__":
-    node_num = 1000
+def robustness(G):
+    rb = []
+    tmp_g = nx.Graph(G)
+    for node in tmp_g.nodes:
+        tmp_g.remove_node(node)
+
+        cc = nx.number_connected_components(tmp_g)
+        num_nodes = len(list(tmp_g.nodes))
+        effAccessibility = num_nodes - cc - 1
+        rb.append(effAccessibility / (num_nodes - 2))
+
+        tmp_g.add_node(node)
+
+    return min(rb)
+
+
+def robustness2(merger):
+    return robustness(merger.graph)
+
+
+def efficiency(merger):
+    return nx.global_efficiency(merger.graph)
+
+
+def main_old():
+    node_num = 100
     graph_float = 0.07
     G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
     print(nx.global_efficiency(G))
-    print(evaluator.nx_robustness(graph_from_grpah(G)))
+    print(robustness(G))
     # G = nx.MultiGraph(G)
     # print(G.nodes)
     Merger.draw_graph(G)
@@ -311,20 +337,20 @@ if __name__ == "__main__":
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
     print(nx.global_efficiency(G3.graph))
-    print(evaluator.nx_robustness(graph_from_grpah(G3.graph)))
+    print(robustness(G3.graph))
 
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     # print(Merger.plot_degree(G3.graph, degree_log))
     # print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
     print(nx.global_efficiency(G3.graph))
-    print(evaluator.nx_robustness(graph_from_grpah(G3.graph)))
+    print(robustness(G3.graph))
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     # print(Merger.plot_degree(G3.graph, degree_log))
     # print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
     print(nx.global_efficiency(G3.graph))
-    print(evaluator.nx_robustness(graph_from_grpah(G3.graph)))
+    print(robustness(G3.graph))
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
     # print(Merger.plot_degree(G3.graph, degree_log))
     # print(Merger.plot_spd(G3.graph, spd_log))
@@ -337,32 +363,93 @@ if __name__ == "__main__":
             count += 1
     file_name = file_name + str(count)
 
-    input = input("Save the graph? y/n: ")
-    if input == 'y':
+    uinput = input("Save the graph? y/n: ")
+    if uinput == 'y':
         joblib.dump(G3, os.path.join(os.path.abspath(os.path.curdir), file_name))
 
-    """testing with small graph discussed"""
-    # G = nx.Graph()
-    # for i in range(8):
-    #     G.add_node(i)
-    # for i in range(5):
-    #     for j in range(5):
-    #         if i != j:
-    #             G.add_edge(i,j)
-    # for k in range(4):
-    #     for l in range(4):
-    #         if k != l:
-    #             G.add_edge(k+4,l+4)
-    # print(G.nodes)
-    # print(G.edges)
-    # plt.figure(1, figsize=(8, 8))
-    # plt.subplot()
-    # nx.draw(G)
-    # plt.show()
-    # my_graph = Merger(G)
-    # my_graph.cont_all_cliques(min_clique_node=3)
-    # print(my_graph.graph.edges)
-    # plt.figure(2, figsize=(8, 8))
-    # plt.subplot()
-    # nx.draw(my_graph.graph, node_size_dict=30)
-    # plt.show()
+
+def small_graph():
+    G = nx.Graph()
+    for i in range(8):
+        G.add_node(i)
+    for i in range(5):
+        for j in range(5):
+            if i != j:
+                G.add_edge(i, j)
+    for k in range(4):
+        for l in range(4):
+            if k != l:
+                G.add_edge(k + 4, l + 4)
+    print(G.nodes)
+    print(G.edges)
+    plt.figure(1, figsize=(8, 8))
+    plt.subplot()
+    nx.draw(G)
+    plt.show()
+    my_graph = Merger(G)
+    my_graph.cont_all_cliques(min_clique_node=3)
+    print(my_graph.graph.edges)
+    plt.figure(2, figsize=(8, 8))
+    plt.subplot()
+    nx.draw(my_graph.graph, node_size_dict=30)
+    plt.show()
+
+
+def get_efficiency_list(M, steps=3):
+    r = []
+    tmp = Merger(M.graph)
+    for i in range(steps):
+        r.append(efficiency(tmp))
+        tmp.cont_all_cliques()
+    return r
+
+
+def get_robustness_list(M, steps=3):
+    r = []
+    tmp = Merger(M.graph)
+    for i in range(steps):
+        r.append(robustness2(tmp))
+        tmp.cont_all_cliques()
+    return r
+
+
+if __name__ == "__main__":
+    import threading
+
+    graphs = []
+    for i in range(10):
+        tmp_g = nx.random_geometric_graph((i + 1) * 100, min(0.5, 1.2 / (i + 1)))
+        tmp_g = Merger(tmp_g)
+        graphs.append(tmp_g)
+    e_list = []
+    for j in range(10):
+        e_list.append(get_efficiency_list(graphs[j], steps=3))
+
+    r_list = []
+    for j in range(10):
+        r_list.append(get_robustness_list(graphs[j], steps=3))
+
+    t = linspace(0, 3, 3)
+    for k in range(10):
+        plt.plot(t, e_list[k], Merger.random_color())
+    plt.show()
+
+    u = linspace(0, 3, 3)
+    for l in range(10):
+        plt.plot(u, r_list[l], Merger.random_color())
+    plt.show()
+    """
+    graphs = []
+    for i in range(10):
+        tmp_g = nx.random_geometric_graph(1000, 0.07)
+        tmp_g = Merger(tmp_g)
+        graphs.append(tmp_g)
+    for k in range(3):
+        e = sorted(graphs, key=efficiency)
+        r = sorted(graphs, key=robustness2)
+        print("efficiency: {} robustness: {}".format(e, r))
+        for j in range(len(graphs)):
+            tmp = graphs[j]
+            tmp.cont_all_cliques()
+            graphs[j] = tmp
+    """
