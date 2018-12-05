@@ -418,7 +418,7 @@ if __name__ == "__main__":
 
     graphs = []
     for i in range(10):
-        tmp_g = nx.random_geometric_graph(500, 0.12)
+        tmp_g = nx.random_geometric_graph((i + 1) * 100, min(0.5, 1.2 / (i + 1)))
         tmp_g = Merger(tmp_g)
         graphs.append(tmp_g)
     e_list = []
