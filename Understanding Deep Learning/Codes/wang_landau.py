@@ -58,7 +58,7 @@ def average_costs():
     arr = ["normal", "power", "exponential", "random"]
     costs = {"normal" : 0, "power" : 0, "exponential" : 0, "random" : 0}
     for i in range(500):
-        if i % 10 == 0:
+        if i % 50 == 0:
             print("Iteration: " + str(i))
         for config in arr:
             weights = sample_weights(config)
@@ -76,9 +76,11 @@ def average_costs():
             w1 = np.reshape(w1, (784, 12))
             w2 = np.reshape(w2, (12, num_classes))
             model = baseline_model(w1, b1, w2, b2)
-            history_callback = model.fit(X_final, y_final, epochs=1, batch_size=X_final.shape[1])
+            history_callback = model.fit(X_final, y_final, epochs=1, batch_size=X_final.shape[1], verbose=0)
             loss_history = history_callback.history["loss"]
             costs[config] += loss_history[0]
+            if i % 50 == 0:
+                print("Cost: " + config +  " " + str(costs[config]))
 
     for c in costs:
         print(c + ": " + str(costs[c]/500.0))
