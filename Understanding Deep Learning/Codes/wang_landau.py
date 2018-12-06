@@ -43,7 +43,48 @@ def baseline_model(w1, b1, w2, b2):
     model.trainable = False
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
-    
+
+def sample_weights(config):
+    if config == "normal":
+        return np.random.normal(size = 784*12 + 12 + 12*num_classes + num_classes) 
+    if config == "power":
+        return np.random.power(a = 5., size = 784*12 + 12 + 12*num_classes + num_classes)
+    if config == "exponential":
+        return np.random.exponential(size = 784*12 + 12 + 12*num_classes + num_classes)
+    if config == "random":
+        return np.random.random(size = 784*12 + 12 + 12*num_classes + num_classes)
+
+def average_costs():
+    arr = ["normal", "power", "exponential", "random"]
+    costs = {"normal" : 0, "power" : 0, "exponential" : 0, "random" : 0}
+    for i in range(500):
+        if i % 50 == 0:
+            print("Iteration: " + str(i))
+        for config in arr:
+            weights = sample_weights(config)
+            e1 = 784*12
+            e2 = e1 + 12
+            e3 = e2 + 12*num_classes
+            e4 = e3 + num_classes
+            spl = np.split(weights, [e1, e2, e3, e4])
+            
+            w1 = spl[0]
+            b1 = spl[1]
+            w2 = spl[2]
+            b2 = spl[3]
+            
+            w1 = np.reshape(w1, (784, 12))
+            w2 = np.reshape(w2, (12, num_classes))
+            model = baseline_model(w1, b1, w2, b2)
+            history_callback = model.fit(X_final, y_final, epochs=1, batch_size=X_final.shape[1], verbose=0)
+            loss_history = history_callback.history["loss"]
+            costs[config] += loss_history[0]
+            if i % 50 == 0:
+                print("Cost: " + config +  " " + str(costs[config]))
+
+    for c in costs:
+        print(c + ": " + str(costs[c]/500.0))
+
 #scores = model.evaluate(X_test, y_test, verbose=0)
 #print("Baseline Error: %.2f%%" % (100-scores[1]*100))
 
@@ -78,7 +119,7 @@ epsilon =  .002
 alpha_map = {}
 densities = {}
 density_counts = {}
-#locks = {}
+lock_map = {}
 
 #splits energy landscape into bins
 def create_bins():
@@ -92,6 +133,7 @@ def init():
     thread_count = 0
     for t in global_bins: 
             #lock[t] = threading.RLock()
+        #lock_map[t] = threading.RLock()
         alpha_map[t] = alpha_init
         bins = []
         i = t[0]
@@ -247,10 +289,18 @@ def wang_landau(cur_thread, subwindow):
     
         iteration += 1
     print("Finished running WL: %s %f %f " % (cur_thread, subwindow[0], subwindow[1]))
+
+#def polynomial():
+
+
+#def shekel():
+
+'''
 init()
 wang_landau(alpha, epsilon)
-save_dict(densities, 'densities_parallel')
+save_dict(densities, 'densities_parallel')#
 d_map = load_dict('densities_parallel')
 for v in d_map:
     print(v)
-    print(d_map[v])
+    print(d_map[v])'''
+average_costs()
