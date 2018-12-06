@@ -68,7 +68,7 @@ class Merger(object):
     def color_neighbors(self):
         """possibility of robustness loss"""
         p = {}
-        for node in G:
+        for node in self.graph:
             p[node] = "#000000"
         neighbor = {}
 
@@ -318,7 +318,7 @@ def efficiency(merger):
 
 
 def main_old():
-    node_num = 100
+    node_num = 1000
     graph_float = 0.07
     G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
@@ -425,7 +425,7 @@ def a_r_l(i, M, r_d, steps=3):
     print(r_d, "donezoed!")
 
 
-if __name__ == "__main__":
+def many_graphs_multiproc():
     from multiprocessing import Process
     import multiprocessing
 
@@ -462,6 +462,10 @@ if __name__ == "__main__":
     for k in range(20):
         plt.plot(t, e_list[k], Merger.random_color())
     plt.show()
+
+
+if __name__ == "__main__":
+    main_old()
 
     """
     graphs = []
