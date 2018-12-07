@@ -287,12 +287,6 @@ class Merger(object):
                 print(str(key) + ": " + str(self.node_tree[key]))
 
 
-def graph_from_grpah(G):
-    """Graph from networkx grpah"""
-    g = graph.Graph(len(G.nodes), list(G.edges), False, False)
-    return g
-
-
 def robustness(G):
     rb = []
     tmp_g = nx.Graph(G)
@@ -434,17 +428,23 @@ def many_graphs_multiproc():
     r_dict = manager.dict()
 
     graphs = []
-    for i in range(20):
-        y_f = 0.05992949 + (258735.2 - 0.05992949) / (1 + (((i + 1) * 100) / 3.673678e-10) ** 0.5484871)
-        tmp_g = nx.random_geometric_graph((i + 1) * 100, y_f)
+    # for i in range(20):
+    #     y_f = 0.05992949 + (258735.2 - 0.05992949) / (1 + (((i + 1) * 100) / 3.673678e-10) ** 0.5484871)
+    #     tmp_g = nx.random_geometric_graph((i + 1) * 100, y_f)
+    #     tmp_g = Merger(tmp_g)
+    #     graphs.append(tmp_g)
+
+    for i in range(10):
+        # y_f = 0.05992949 + (258735.2 - 0.05992949) / (1 + (((i + 1) * 100) / 3.673678e-10) ** 0.5484871)
+        tmp_g = nx.random_geometric_graph(1000, 0.06 + i * 0.002)
         tmp_g = Merger(tmp_g)
         graphs.append(tmp_g)
 
-    for j in range(20):
+    for j in range(len(graphs)):
         pe = Process(target=a_e_l, args=(j, graphs[j], e_dict))
         pe.start()
 
-    for m in range(20):
+    for m in range(len(graphs)):
         p = Process(target=a_r_l, args=(m, graphs[m], r_dict))
         p.start()
 
@@ -452,20 +452,20 @@ def many_graphs_multiproc():
     r_list = list(r_dict.values())
 
     u = linspace(0, 3, 3)
-    for l in range(20):
+    for l in range(len(graphs)):
         plt.plot(u, r_list[l], Merger.random_color())
     plt.show()
 
     pe.join()
     e_list = list(e_dict.values())
     t = linspace(0, 3, 3)
-    for k in range(20):
+    for k in range(len(graphs)):
         plt.plot(t, e_list[k], Merger.random_color())
     plt.show()
 
 
 if __name__ == "__main__":
-    main_old()
+    many_graphs_multiproc()
 
     """
     graphs = []
