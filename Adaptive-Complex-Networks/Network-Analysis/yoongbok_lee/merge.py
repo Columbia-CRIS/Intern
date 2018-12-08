@@ -13,16 +13,27 @@ from numpy import linspace
 class Merger(object):
 
     def __init__(self, G):
+        """basic initializer of the merger class"""
+
+        # graph at stake
         self.graph = G
+
+        # size of the nodes
         self.s_node = {}
         for node in G.nodes:
             self.s_node[node] = 30
+
+        # graph contraction history
         self.level = [self.graph]
         nx.set_node_attributes(self.graph, self.s_node, name="node_size_concat")
         self.min_coloring = 3
+
+        # history of node contraction
         self.node_tree = {}
         for node in G.nodes:
             self.node_tree[node] = [node]
+
+        #node contraction history for each graph contraction history level
         self.node_tree_level = []
         self.node_tree_level.append(self.node_tree)
 
@@ -313,7 +324,7 @@ def efficiency(merger):
 
 def main_old():
     node_num = 1000
-    graph_float = 0.07
+    graph_float = 0.1
     G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
     print(nx.global_efficiency(G))
@@ -325,8 +336,8 @@ def main_old():
     degree_log = True
     spd_log = False
 
-    # print(Merger.plot_degree(G, degree_log))
-    # print(Merger.plot_spd(G, spd_log))
+    print(Merger.plot_degree(G, degree_log))
+    print(Merger.plot_spd(G, spd_log))
 
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
@@ -334,20 +345,20 @@ def main_old():
     print(robustness(G3.graph))
 
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    # print(Merger.plot_degree(G3.graph, degree_log))
-    # print(Merger.plot_spd(G3.graph, spd_log))
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
     print(nx.global_efficiency(G3.graph))
     print(robustness(G3.graph))
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    # print(Merger.plot_degree(G3.graph, degree_log))
-    # print(Merger.plot_spd(G3.graph, spd_log))
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
     print(nx.global_efficiency(G3.graph))
     print(robustness(G3.graph))
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    # print(Merger.plot_degree(G3.graph, degree_log))
-    # print(Merger.plot_spd(G3.graph, spd_log))
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
 
     file_name = str(node_num) + "_" + str(graph_float)
     count = 1
@@ -465,7 +476,7 @@ def many_graphs_multiproc():
 
 
 if __name__ == "__main__":
-    many_graphs_multiproc()
+    main_old()
 
     """
     graphs = []
