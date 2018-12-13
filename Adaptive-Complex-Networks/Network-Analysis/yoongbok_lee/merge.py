@@ -299,6 +299,9 @@ class Merger(object):
 
 
 def robustness(G):
+    """returns robustness of the graph G (also works with a Merger instance G)"""
+    if type(G) == nx.classes.graph.Graph:
+        return robustness(G.graph)
     rb = []
     tmp_g = nx.Graph(G)
     for node in tmp_g.nodes:
@@ -314,15 +317,18 @@ def robustness(G):
     return min(rb)
 
 
-def robustness2(merger):
-    return robustness(merger.graph)
+# used before robustness didn't support Merger class
+# def robustness2(merger):
+#     return robustness(merger.graph)
 
 
-def efficiency(merger):
-    return nx.global_efficiency(merger.graph)
+def efficiency(M):
+    """returns the efficiency of the merger class M"""
+    return nx.global_efficiency(M.graph)
 
 
 def main_old():
+    """generic testing procedure."""
     node_num = 1000
     graph_float = 0.1
     G = nx.random_geometric_graph(node_num, graph_float)
@@ -374,6 +380,7 @@ def main_old():
 
 
 def small_graph():
+    """tests for a graph discussed in meeting in fall 2018"""
     G = nx.Graph()
     for i in range(8):
         G.add_node(i)
@@ -401,6 +408,7 @@ def small_graph():
 
 
 def get_efficiency_list(M, steps=3):
+    """gets efficiency from the graph M, with 3 contraction steps"""
     r = []
     tmp = Merger(M.graph)
     for i in range(steps):
@@ -410,27 +418,35 @@ def get_efficiency_list(M, steps=3):
 
 
 def get_robustness_list(M, steps=3):
+    """gets robustness list from the graph M, with 3 contraction steps"""
     r = []
     tmp = Merger(M.graph)
     for i in range(steps):
-        r.append(robustness2(tmp))
+        r.append(robustness(tmp))
         tmp.cont_all_cliques()
     return r
 
 
 # for multiprocessing
 def a_e_l(i, M, e_d, steps=3):
+    """ same with a_r_l, but for efficiency"""
     e_d[i] = get_efficiency_list(M, steps)
     print(e_d, "done!")
 
 
 # for multiprocessing
 def a_r_l(i, M, r_d, steps=3):
+    """for multiprocessing.
+        i = index of the task (usually just a unique number for each graph)
+        M = Merger object
+        r_d = robustness dictionary (result)
+        steps = number of contraction steps"""
     r_d[i] = get_robustness_list(M, steps)
     print(r_d, "donezoed!")
 
 
 def many_graphs_multiproc():
+    """multiprocess enabled testing tool for random geometric graph"""
     from multiprocessing import Process
     import multiprocessing
 
