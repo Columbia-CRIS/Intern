@@ -16,16 +16,16 @@ import math
 
 # basic settings
 num_levels = 100 # number of salary levels
-num_agents = 100000
-num_classes = 5 
+num_agents = 10000
+num_classes = 5
 
 # parameter init mode, either 'constant' or 'random'
-mode = 'constant'
+mode = 'random'
 
 # standard dev. under random mode
-sigma_alpha = 0.2
-sigma_beta = 0.01
-sigma_gamma = 0.01
+sigma_alpha = 0.5
+sigma_beta = 0.05
+sigma_gamma = 0.05
 
 # parameters for each agent
 agent_alpha_list = np.zeros(num_agents)
@@ -43,8 +43,8 @@ s_min = 20000.0
 s_max = 3000000.0
 
 # stopping conditions
-epsilon = 10000
-epoch_max = 50
+epsilon = 10
+epoch_max = 100
 
 
 # === DO NOT MODIFY THIS  ===
