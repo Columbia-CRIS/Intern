@@ -7,11 +7,19 @@ import numpy as np
 # Calculates G, or the survival fitness function, for a given graph g
 # Input: A graph
 # Output: A fitness score
-def evaluate(g, alpha):
-    normEff = efficiency(g)
-    normRob = robustness(g)
-    return alpha * normEff + (1 - alpha) * normRob
+def evaluate(g, alpha, edge_mutate):
+    normEff = nx_efficiency(g)
+    normRob = nx_most_connected_robustness(g)
 
+    if edge_mutate: # If edges can mutate, include edge redundancy in fitness
+        return alpha * normEff + (1 - alpha) * normRob - redundancy(g)
+    else:
+        return alpha * normEff + (1 - alpha) * normRob
+# Calculates edge redundancy as a negative weight towards the fitness of a graph
+# Input: A graph
+# Output: The edge redundancy (beta) value
+def redundancy(g):
+    return (2 * (g.e - g.n + 1)) / ((g.n - 1) * (g.n - 2))
 
 # Calculates the efficiency of the graph by analyzing distances between every pair of
 # nodes. Uses the NetworkX average_shortest_path_length function.
@@ -108,7 +116,7 @@ def robustness(g):
     # New metric
     # return sum(strucR)
 
-# Calculates the structural of a graph using NetworkX functions
+# Calculates the structural robustness of a graph using NetworkX functions
 # Input: A graph
 # Output: The robustness value
 def nx_robustness(g):
@@ -131,6 +139,34 @@ def nx_robustness(g):
         strucR[j]  = effAccessibility / (g.n - 2)
 
     return min(strucR)
+
+# Calculates the structural robustness of a graph using NetworkX functions
+# Structural robustness is calculated here via removing the most connected node in the graph
+# This measure is done as a performance optimization
+# Input: A graph
+# Output: The robustness value
+def nx_most_connected_robustness(g):
+    maxJ = 0
+    maxConnected = sum(g.adj[maxJ])
+    for j in range(g.n):
+        tmp = sum(g.adj[j])
+        if tmp > maxConnected:
+            maxConnected = tmp
+            maxJ = j
+
+    modifiedAdj = []
+    for r in range(g.n):
+        if r != maxJ:
+            tmpArr = []
+            for c in range(g.n):
+                if c != maxJ:
+                    tmpArr.append(g.adj[r][c])
+            modifiedAdj.append(tmpArr)
+
+    G = nx.from_numpy_matrix(np.matrix(modifiedAdj))
+    numCC = nx.number_connected_components(G)
+    effAccessibility = g.n - numCC - 1
+    return effAccessibility / (g.n - 2)
 
 # A robustness helper function that runs a DFS on the graph to populate a stack
 # before running the individual functional and structural robustness calculations

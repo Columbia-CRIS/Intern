@@ -159,7 +159,7 @@ def star(n):
 
 
 ### NetworkX is a lot faster for efficiency
-# g = perfect(30)
+# g = perfect(100)
 # start = time.time()
 # print("Eff", evaluator.efficiency(g))
 # end = time.time()
@@ -171,16 +171,33 @@ def star(n):
 # print(end - start)
 
 ### NetworkX is a lot slower for robustness
-g = pent(30)
-start = time.time()
-print("Rob", evaluator.robustness(g))
-end = time.time()
-print(end - start)
+# g = pent(50)
+# start = time.time()
+# print("MC Nx Rob", evaluator.nx_most_connected_robustness(g))
+# end = time.time()
+# print(end - start)
+#
+# start = time.time()
+# print("Rob", evaluator.robustness(g))
+# end = time.time()
+# print(end - start)
+#
+# start = time.time()
+# print("Nx Rob", evaluator.nx_robustness(g))
+# end = time.time()
+# print(end - start)
 
-start = time.time()
-print("Nx Rob", evaluator.nx_robustness(g))
-end = time.time()
-print(end - start)
+# Understanding how SCC works
+g = Graph(4, 4, True, False)
+g.adj = [[0, 1, 0, 1],
+         [1, 0, 1, 0],
+         [0, 1, 0, 1],
+         [1, 0, 1, 0]]
+
+print(evaluator.evaluate(g, 0, True))
+# G = nx.from_numpy_matrix(np.matrix(adj))
+# SCC = list(nx.connected_components(G))
+# print(SCC)
 
 
 # show_graph_with_labels(g.adj)

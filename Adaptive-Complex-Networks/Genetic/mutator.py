@@ -1,13 +1,16 @@
-from random import randint
+from random import randint, sample
 from evaluator import isConnected
 from copy import deepcopy
 from classes.graph import Graph
+import time
+import networkx as nx
+import numpy as np
 
 # Mutates a pool of candidate graphs with their fitness score.
 # Picks the best 2, reproduces them, and then mutate their children
-# Input: Pool of parents, respective array of fitness scores, connectedness, directedness
+# Input: Pool of parents, respective array of fitness scores, connectedness, directedness, whether edge count can mutate, verbosity
 # Output: Pool of children (same size as parents)
-def mutate(pool, fitness, gensWithoutChange, connected, directed, annealing):
+def mutate(pool, fitness, gensWithoutChange, connected, directed, annealing, edge_mutate, verbose):
     # Indices for the best performing parents
     parent1 = 0
     parent2 = 1
@@ -23,14 +26,14 @@ def mutate(pool, fitness, gensWithoutChange, connected, directed, annealing):
     # Reproduction
     if annealing:
         children = [None] * len(pool)
+        if verbose:
+            print("Running annealing")
     else:
         children = [None] * (len(pool) - 1)
 
-
-    if annealing:
-        print("Running annealing")
-
+    # Actually conduct mutation
     for i in range(len(children)):
+        startTime = time.time()
         if annealing:
             # Sexual mutation
             p1 = randint(0, len(pool) - 1)
@@ -40,13 +43,75 @@ def mutate(pool, fitness, gensWithoutChange, connected, directed, annealing):
             children[i] = crossover(pool[p1], pool[p2], directed)
         else:
             children[i] = crossover(pool[parent1], pool[parent2], directed)
+        endTime = time.time()
+        if verbose:
+            print("Sexual mutation time: ", endTime - startTime)
+
         # Asexual mutation
-        mutateEdge(children[i], pool[parent1].e, directed, connected)
-        while connected and not isConnected(children[i].adj):
+        startTime = time.time()
+
+        if not edge_mutate: # If edge count is immutable
             mutateEdge(children[i], pool[parent1].e, directed, connected)
+            while connected and not isConnected(children[i].adj):
+                mutateEdge(children[i], pool[parent1].e, directed, connected)
+        elif connected: # If edges are mutable
+            connectCC(children[i], directed)
+
+        endTime = time.time()
+        if verbose:
+            print("Asexual mutation time: ", endTime - startTime)
     if not annealing:
         children.append(pool[parent1]) # Add the best parent back into children
     return children
+
+# Asexually mutates a graph that is unconstrained by edge count. It checks
+# for all of the strongly connected components of the graph, and then
+# connects all of them by randomly adding edges between connected components.
+# At the end, it should output a fully connected graph
+# Input:  Adjacency matrix, directedness
+# Output: Nothing
+def connectCC(g, directed):
+    G = nx.from_numpy_matrix(np.matrix(g.adj))
+
+    # Use NetworkX to get the connected components of the graph
+    if directed:
+        CC = list(nx.strongly_connected_components(G))
+    else:
+        CC = list(nx.connected_components(G))
+
+    # Continuously & randomly pluck 2 CC's to connect
+    # Then merge them into one in the CC array.
+    # Connected graph where only one connected component remaining
+    while len(CC) > 1:
+        # Randomly pick and remove first CC
+        randomCCindex = randint(0, len(CC) - 1)
+        firstCC = CC[randomCCindex]
+        del CC[randomCCindex]
+
+        # Randomly pick and remove second CC
+        randomCCindex = randint(0, len(CC) - 1)
+        secondCC = CC[randomCCindex]
+        del CC[randomCCindex]
+
+        # Merge the CC's and add to the CC list
+        mergedCC = firstCC | secondCC
+        CC.append(mergedCC)
+
+        # Randomly generate an edge between CC1 and CC2
+        startNode = sample(firstCC, 1)[0]
+        endNode = sample(secondCC, 1)[0]
+
+        if directed:
+            options = [firstCC, secondCC]
+            root = options[randint(0, 1)]
+            options.remove(root)
+            end = options[0]
+            g.adj[root][end] = 1
+        else:
+            g.adj[startNode][endNode] = 1
+            g.adj[endNode][startNode] = 1
+        g.e += 1
+
 
 # Asexually mutates a graph with respect to its edges. It checks if the graph has
 # the correct number of edges and does mutations either to revert it to the correct
@@ -54,16 +119,12 @@ def mutate(pool, fitness, gensWithoutChange, connected, directed, annealing):
 # Input: Adjacency matrix, correct number of edges, directedness
 # Output: Nothing
 def mutateEdge(g, edges, directed, connected):
-    """ Asexually mutates a graph with respect to its edges. 
-        Checks whether the graph has the correct number of 
-        edges and does mutations to revert it to the correct 
-        number of edges, or just randomly moves edges around. 
+    """ Asexually mutates a graph with respect to its edges.
+        Checks whether the graph has the correct number of
+        edges and does mutations to revert it to the correct
+        number of edges, or just randomly moves edges around.
 
         Input: Adjacency Matrix, correct number of edges, directedness
-<<<<<<< HEAD
-        
-=======
->>>>>>> c8a89229c50067ebeb60c26d2f4fa1d4efe9bc61
         Makes changes directly to Matrix (no output)
     """
     if ((directed and g.e == g.n ** 2 - g.n)
