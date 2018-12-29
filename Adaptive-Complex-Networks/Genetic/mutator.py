@@ -117,7 +117,7 @@ def connectCC(g, directed):
 # Output: Nothing
 def condenseNetwork(g, directed):
     for r in range(g.n):
-        if sum(g.adj[r]) > 1 and randint(1, 2) < 2:
+        if sum(g.adj[r]) > 1 and randint(1, 8) < 2:
             if directed:
                 edgeIndex = [c for c in range(g.n) if g.adj[r][c] == 1]
             else:
