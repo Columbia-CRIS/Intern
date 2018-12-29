@@ -77,10 +77,10 @@ def efficiency(g):
     starAPSP = 2 * (1 - 1 / g.n)
 
     # SECON metric
-    # return starAPSP / APSP
+    return starAPSP / APSP
 
     # New metric
-    return 1 / APSP
+    # return 1 / APSP
 
 # Calculates the structural and functional robustness of a graph
 # Input: A graph

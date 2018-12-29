@@ -1,6 +1,6 @@
 import argparse
 
-from iterator import iterate
+from iterator import iterate, saveGraph
 import evaluator
 import networkx as nx
 import numpy as np
@@ -44,7 +44,12 @@ if __name__ == '__main__':
     parser.add_argument('--v', type=bool, default=False, help='Verbose logging (default: false)')
 
     best = initialize(parser.parse_args()) # calls initialize function from above
-    print("efficiency", evaluator.efficiency(best))
-    print("robustness", evaluator.robustness(best))
-    show_graph_with_labels(best.adj)
+    print("efficiency", evaluator.nx_efficiency(best))
+    print("robustness", evaluator.nx_most_connected_robustness(best))
+    print("redundancy", evaluator.redundancy(best))
+    print("edges", best.e)
+    print("nodes", best.n)
+    if best.n <= 20: # This way logging does not take over whole screen
+        show_graph_with_labels(best.adj)
+    saveGraph(best.adj, 'BEST')
     print(best)

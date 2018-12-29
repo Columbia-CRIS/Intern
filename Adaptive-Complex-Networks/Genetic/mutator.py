@@ -1,4 +1,4 @@
-from random import randint, sample
+from random import randint, sample, choice
 from evaluator import isConnected
 from copy import deepcopy
 from classes.graph import Graph
@@ -44,8 +44,6 @@ def mutate(pool, fitness, gensWithoutChange, connected, directed, annealing, edg
         else:
             children[i] = crossover(pool[parent1], pool[parent2], directed)
         endTime = time.time()
-        if verbose:
-            print("Sexual mutation time: ", endTime - startTime)
 
         # Asexual mutation
         startTime = time.time()
@@ -55,11 +53,10 @@ def mutate(pool, fitness, gensWithoutChange, connected, directed, annealing, edg
             while connected and not isConnected(children[i].adj):
                 mutateEdge(children[i], pool[parent1].e, directed, connected)
         elif connected: # If edges are mutable
+            condenseNetwork(children[i], directed)
             connectCC(children[i], directed)
 
         endTime = time.time()
-        if verbose:
-            print("Asexual mutation time: ", endTime - startTime)
     if not annealing:
         children.append(pool[parent1]) # Add the best parent back into children
     return children
@@ -68,7 +65,7 @@ def mutate(pool, fitness, gensWithoutChange, connected, directed, annealing, edg
 # for all of the strongly connected components of the graph, and then
 # connects all of them by randomly adding edges between connected components.
 # At the end, it should output a fully connected graph
-# Input:  Adjacency matrix, directedness
+# Input: Adjacency matrix, directedness
 # Output: Nothing
 def connectCC(g, directed):
     G = nx.from_numpy_matrix(np.matrix(g.adj))
@@ -112,6 +109,24 @@ def connectCC(g, directed):
             g.adj[endNode][startNode] = 1
         g.e += 1
 
+# For nodes with degree > 1, randomly remove an edge
+# This way after connecting all of the disconnected CC's
+# there exist an operation to asexually remove nodes, so that
+# edge counts don't continuously build up
+# Input: Adjacency matrix, directedness
+# Output: Nothing
+def condenseNetwork(g, directed):
+    for r in range(g.n):
+        if sum(g.adj[r]) > 1 and randint(1, 2) < 2:
+            if directed:
+                edgeIndex = [c for c in range(g.n) if g.adj[r][c] == 1]
+            else:
+                edgeIndex = [c for c in range(g.n) if g.adj[r][c] == 1 and g.adj[c][r] == 1]
+            randDelete = choice(edgeIndex) # Random index to delete
+
+            g.adj[r][randDelete] = 0
+            if not directed:
+                g.adj[randDelete][r] = 0
 
 # Asexually mutates a graph with respect to its edges. It checks if the graph has
 # the correct number of edges and does mutations either to revert it to the correct
