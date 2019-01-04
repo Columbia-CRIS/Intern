@@ -21,6 +21,8 @@ num_classes = 5
 
 # parameter init mode, either 'constant' or 'random'
 mode = 'random'
+# utility function choice, either 'log' or 'sqrt'
+utility_function = 'log'
 
 # standard dev. under random mode
 sigma_alpha = 0.5
@@ -109,15 +111,23 @@ def turtle():
         
         alpha, beta, gamma = agent_alpha_list[i], agent_beta_list[i], agent_gamma_list[i]
         
-        # target utility
-        payoff_target = alpha * math.log(s_target) 
-        payoff_target -= beta * math.log(s_target) ** 2
-        payoff_target -= gamma * math.log(num_target + 1.0 / num_agents)
-        
-        # current utility
-        payoff_self = alpha * math.log(s_self)
-        payoff_self -= beta * math.log(s_self) ** 2
-        payoff_self -= gamma * math.log(num_self + 1.0 / num_agents)
+        # target utility & current utility
+        if utility_function == 'log':
+            payoff_target = alpha * math.log(s_target) 
+            payoff_target -= beta * math.log(s_target) ** 2
+            payoff_target -= gamma * math.log(num_target + 1.0 / num_agents)
+            
+            payoff_self = alpha * math.log(s_self)
+            payoff_self -= beta * math.log(s_self) ** 2
+            payoff_self -= gamma * math.log(num_self + 1.0 / num_agents)
+        else:
+            payoff_target = alpha * math.sqrt(s_target) 
+            payoff_target -= beta * math.sqrt(s_target) ** 2
+            payoff_target -= gamma * math.log(num_target + 1.0 / num_agents)
+            
+            payoff_self = alpha * math.sqrt(s_self)
+            payoff_self -= beta * math.sqrt(s_self) ** 2
+            payoff_self -= gamma * math.log(num_self + 1.0 / num_agents)
         
         if payoff_target > payoff_self:
             # move agent from self to target
