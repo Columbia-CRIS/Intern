@@ -10,9 +10,14 @@
 
 
 ## Deep learning
-# Reading order
+### Reading order
 - [ ] Shi, Wust and Landau (2016) - Characterizing Folding Funnels Using Replica Exchange
 - [ ] Saremi and Sejnowski (2012)
+
+## Machine Learning in ChemE
+### Readings
+- [ ] Venkatasubramanian (2019) - The promise of artificial intelligence in chemical engineering: Is it here, finally?
+
 
 
 ## Project goals will be added soon
