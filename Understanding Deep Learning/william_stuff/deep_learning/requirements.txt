@@ -1,4 +1,6 @@
+jupyter
 matplotlib
 numpy
 pyyaml
+scipy
 tensorflow
