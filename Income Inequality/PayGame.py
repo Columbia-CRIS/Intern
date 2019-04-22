@@ -4,7 +4,7 @@
 """
 Created on Thu Nov 15 12:50:31 2018
 
-@author: XIN
+@author: Cindy L.
 """
 
 
