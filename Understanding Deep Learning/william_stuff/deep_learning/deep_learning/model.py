@@ -10,6 +10,8 @@ from scipy.special import softmax
 import tensorflow as tf
 from tensorflow.keras import layers
 
+from .util import rand_sample
+
 
 def simple_wl_model(x_dims) -> 'Model':
     """
@@ -37,7 +39,7 @@ def mnist_model() -> 'Model':
     :return: compiled Keras model
     """
     model = tf.keras.Sequential([
-        layers.Flatten(input_shape=(28,28)),
+        layers.Flatten(input_shape=(14, 14)),
         layers.Dense(128, activation=tf.nn.relu),
         layers.Dense(10, activation=tf.nn.softmax)
     ])
@@ -59,4 +61,46 @@ def simple_classify(x: np.ndarray) -> int:
     output = np.matmul(W.transpose(), x.reshape(3, 1)) + b
 
     return np.argmax(softmax(output))
+
+
+def make_simple_abs(n: int) -> 'function':
+    data = np.arange(-1, 1, 2 / n)
+    labels = np.array([abs(val) for val in data])
+
+    def simple_abs(w: np.ndarray) -> float:
+        losses = [(labels[i]
+                   - (_relu(w[0] * data[i]) + _relu(w[1] * data[i])))**2
+                  for i in range(len(labels))]
+        total_loss = sum(losses)
+        return total_loss
+
+    return simple_abs
+
+
+def _relu(x: float) -> float:
+    return x * (x > 0)
+
+
+def make_full_abs(n: int) -> 'function':
+    data = np.arange(-1, 1, 2 / n)
+    labels = np.array([abs(val) for val in data])
+
+    def full_abs(w: np.ndarray) -> float:
+        w1, w2, w3, w4, b1, b2, b3 = w
+
+        def _predict(x: float) -> float:
+            z1 = _relu(x * w1 + b1)
+            z2 = _relu(x * w2 + b2)
+            out = z1 * w3 + z2 * w4 + b3
+
+            return out
+
+        predictions = [_predict(x) for x in data]
+        losses = [(labels[i] - predictions[i])**2 for i in range(len(labels))]
+        total_loss = sum(losses)
+
+        return total_loss
+
+    return full_abs
+
 

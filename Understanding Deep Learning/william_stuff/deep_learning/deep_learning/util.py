@@ -75,7 +75,8 @@ def wang_landau(energy: 'function',
                 log_dir: Path = None,
                 flatness: float = 0.90,
                 resolution: int = 10,
-                step_size: float = 1) -> 'dict':
+                step_size: float = 1,
+                clear_zero: bool = True) -> 'dict':
 
     snapshot_path = log_dir / 'snapshots.txt'
 
@@ -129,7 +130,8 @@ def wang_landau(energy: 'function',
         if iteration % check_every == 0:
             logging.info("Iteration %d f=%f" % (iteration, f))
 
-            test_H = {e: H[e] for e in H.keys() if H[e] != 0}  # TODO: set option to disable / tune
+            test_H = {e: H[e] for e in H.keys() if H[e] != 0} \
+                if clear_zero else H
             if _is_flat(test_H, flatness):
                 logging.info("Histogram flat at iteration %d" % iteration)
 
@@ -201,6 +203,13 @@ def _save_snapshot(S: dict, filename: str) -> None:
     with open(filename, 'a') as snapshot_file:
         snapshot_file.write(str(S))
         snapshot_file.write('\n')
+
+
+def rand_sample(size: int, domain: tuple) -> np.ndarray:
+    samp = np.random.random_sample(size) \
+           * (domain[1] - domain[0]) \
+           + domain[0]
+    return samp
 
 
 if __name__ == '__main__':

@@ -21,13 +21,6 @@ TB_DIR = LOG_DIR / 'tensorboard' / RUN_NAME
 WL_DIR = LOG_DIR / 'wang_landau' / RUN_NAME
 
 
-def _rand_sample(size: int, domain: tuple) -> np.ndarray:
-    samp = np.random.random_sample(size) \
-           * (domain[1] - domain[0]) \
-           + domain[0]
-    return samp
-
-
 def _train_model(model: tf.keras.models.Model,
                  data: np.ndarray,
                  labels: np.ndarray,
