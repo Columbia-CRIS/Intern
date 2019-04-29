@@ -1,5 +1,5 @@
 from scipy import *
-from scipy import weave
+#from scipy import weave
 import sys
 from pylab import *
 
@@ -63,7 +63,7 @@ def SamplePython(Nitt, N, N2, indE, E0, flatness):
     
     for itt in range(Nitt):
         ii = int(rand()*N2)       # The site to flip
-        (i,j) = (ii % N, ii / N)  # The coordinates of the site
+        (i,j) = (int(ii % N), int(ii / N))  # The coordinates of the site
         S = latt[i,j]             # its spin
         WF = latt[(i+1)%N, j] + latt[i,(j+1)%N] + latt[(i-1)%N,j] + latt[i,(j-1)%N]
         Enew = Ene + 2*S*WF       # The energy of the tryed step
@@ -80,7 +80,7 @@ def SamplePython(Nitt, N, N2, indE, E0, flatness):
             if mH > aH*flatness:    # Is the histogram flat enough?
                 Hist = zeros(len(Hist)) # Resetting histogram
                 lnf /= 2.               # and reducing the modification factor
-                print itt, 'histogram is flatt', mH, aH, 'f=', exp(lnf)
+                print(itt, 'histogram is flatt', mH, aH, 'f=', exp(lnf))
     return (lngE, Hist)
 
 if __name__ == '__main__':
