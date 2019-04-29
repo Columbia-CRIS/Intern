@@ -13,16 +13,27 @@ from numpy import linspace
 class Merger(object):
 
     def __init__(self, G):
+        """basic initializer of the merger class"""
+
+        # graph at stake
         self.graph = G
+
+        # size of the nodes
         self.s_node = {}
         for node in G.nodes:
             self.s_node[node] = 30
+
+        # graph contraction history
         self.level = [self.graph]
         nx.set_node_attributes(self.graph, self.s_node, name="node_size_concat")
         self.min_coloring = 3
+
+        # history of node contraction
         self.node_tree = {}
         for node in G.nodes:
             self.node_tree[node] = [node]
+
+        #node contraction history for each graph contraction history level
         self.node_tree_level = []
         self.node_tree_level.append(self.node_tree)
 
@@ -288,6 +299,9 @@ class Merger(object):
 
 
 def robustness(G):
+    """returns robustness of the graph G (also works with a Merger instance G)"""
+    if type(G) == nx.classes.graph.Graph:
+        return robustness(G.graph)
     rb = []
     tmp_g = nx.Graph(G)
     for node in tmp_g.nodes:
@@ -303,17 +317,20 @@ def robustness(G):
     return min(rb)
 
 
-def robustness2(merger):
-    return robustness(merger.graph)
+# used before robustness didn't support Merger class
+# def robustness2(merger):
+#     return robustness(merger.graph)
 
 
-def efficiency(merger):
-    return nx.global_efficiency(merger.graph)
+def efficiency(M):
+    """returns the efficiency of the merger class M"""
+    return nx.global_efficiency(M.graph)
 
 
 def main_old():
+    """generic testing procedure."""
     node_num = 1000
-    graph_float = 0.07
+    graph_float = 0.1
     G = nx.random_geometric_graph(node_num, graph_float)
     # G = nx.MultiGraph(G)
     print(nx.global_efficiency(G))
@@ -325,8 +342,8 @@ def main_old():
     degree_log = True
     spd_log = False
 
-    # print(Merger.plot_degree(G, degree_log))
-    # print(Merger.plot_spd(G, spd_log))
+    print(Merger.plot_degree(G, degree_log))
+    print(Merger.plot_spd(G, spd_log))
 
     G3 = Merger(G)
     G3.graph = G3.cont_all_cliques(4)
@@ -334,20 +351,20 @@ def main_old():
     print(robustness(G3.graph))
 
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    # print(Merger.plot_degree(G3.graph, degree_log))
-    # print(Merger.plot_spd(G3.graph, spd_log))
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
     print(nx.global_efficiency(G3.graph))
     print(robustness(G3.graph))
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    # print(Merger.plot_degree(G3.graph, degree_log))
-    # print(Merger.plot_spd(G3.graph, spd_log))
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
     G3.graph = G3.cont_all_cliques(4)
     print(nx.global_efficiency(G3.graph))
     print(robustness(G3.graph))
     Merger.draw_graph(G3.graph, node_size_dict=G3.s_node, label=False)
-    # print(Merger.plot_degree(G3.graph, degree_log))
-    # print(Merger.plot_spd(G3.graph, spd_log))
+    print(Merger.plot_degree(G3.graph, degree_log))
+    print(Merger.plot_spd(G3.graph, spd_log))
 
     file_name = str(node_num) + "_" + str(graph_float)
     count = 1
@@ -363,6 +380,7 @@ def main_old():
 
 
 def small_graph():
+    """tests for a graph discussed in meeting in fall 2018"""
     G = nx.Graph()
     for i in range(8):
         G.add_node(i)
@@ -390,6 +408,7 @@ def small_graph():
 
 
 def get_efficiency_list(M, steps=3):
+    """gets efficiency from the graph M, with 3 contraction steps"""
     r = []
     tmp = Merger(M.graph)
     for i in range(steps):
@@ -399,27 +418,35 @@ def get_efficiency_list(M, steps=3):
 
 
 def get_robustness_list(M, steps=3):
+    """gets robustness list from the graph M, with 3 contraction steps"""
     r = []
     tmp = Merger(M.graph)
     for i in range(steps):
-        r.append(robustness2(tmp))
+        r.append(robustness(tmp))
         tmp.cont_all_cliques()
     return r
 
 
 # for multiprocessing
 def a_e_l(i, M, e_d, steps=3):
+    """ same with a_r_l, but for efficiency"""
     e_d[i] = get_efficiency_list(M, steps)
     print(e_d, "done!")
 
 
 # for multiprocessing
 def a_r_l(i, M, r_d, steps=3):
+    """for multiprocessing.
+        i = index of the task (usually just a unique number for each graph)
+        M = Merger object
+        r_d = robustness dictionary (result)
+        steps = number of contraction steps"""
     r_d[i] = get_robustness_list(M, steps)
     print(r_d, "donezoed!")
 
 
 def many_graphs_multiproc():
+    """multiprocess enabled testing tool for random geometric graph"""
     from multiprocessing import Process
     import multiprocessing
 
@@ -465,7 +492,7 @@ def many_graphs_multiproc():
 
 
 if __name__ == "__main__":
-    many_graphs_multiproc()
+    main_old()
 
     """
     graphs = []
