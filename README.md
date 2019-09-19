@@ -14,10 +14,8 @@
 - [ ] Venkatasubramanian (2019) - The promise of artificial intelligence in chemical engineering: Is it here, finally?
 
 ## Social Dynamics
-### Reading order
-- [ ] Shi, Wust and Landau (2016) - Characterizing Folding Funnels Using Replica Exchange
-- [ ] Saremi and Sejnowski (2012)
-
+### Readings
+- [ ] Luo et al (2018) - Social Influence makes self interested crowds smarter
 
 
 
