@@ -1,4 +1,4 @@
-# CRIS Lab - Spring 2019
+# CRIS Lab - Fall 2019
 
 ## Expectations from the interns
 
@@ -9,14 +9,15 @@
 - [ ] End of the semester expected **report** and **presentation** 
 
 
-## Deep learning
+## Artificial Intelligence in Material Science
+### Readings
+- [ ] Venkatasubramanian (2019) - The promise of artificial intelligence in chemical engineering: Is it here, finally?
+
+## Social Dynamics
 ### Reading order
 - [ ] Shi, Wust and Landau (2016) - Characterizing Folding Funnels Using Replica Exchange
 - [ ] Saremi and Sejnowski (2012)
 
-## Machine Learning in ChemE
-### Readings
-- [ ] Venkatasubramanian (2019) - The promise of artificial intelligence in chemical engineering: Is it here, finally?
 
 
 
