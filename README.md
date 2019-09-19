@@ -19,6 +19,3 @@
 
 
 
-## Project goals will be added soon
-
-
