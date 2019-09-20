@@ -17,5 +17,9 @@
 ### Readings
 - [ ] Luo et al (2018) - Social Influence makes self interested crowds smarter
 
+## Income Inequality
+### Readings
+- [ ] How much inequality is fair? (Book)
+
 
 
