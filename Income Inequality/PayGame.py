@@ -18,7 +18,7 @@ import math
 num_levels = 100 # number of salary levels
 num_agents = 10000
 num_classes = 5
-
+# num_classes = 1
 # parameter init mode, either 'constant' or 'random'
 mode = 'random'
 # utility function choice, either 'log' or 'sqrt'
@@ -39,6 +39,16 @@ N_list = [0.5, 0.3, 0.15, 0.03, 0.02] # class composition of whole population
 alpha_list = [93.4, 95.8, 97, 99, 100]
 beta_list = [3.87, 3.67, 3.67, 3.67, 4]
 gamma_list = [2.17, 4.34, 4.34, 4.34, 1]
+
+
+# N_list = [1]
+# alpha_list = [93.4]
+# beta_list = [3.87]
+# gamma_list = [2.17]
+
+
+
+
 
 # for level -> salary value
 s_min = 20000.0
@@ -64,7 +74,7 @@ def level_to_salary(x):
 # initialze global variables, including classes and parameter lists
 def setup():
     # assign each agent to a class
-    agent_classes_list[:] = np.random.choice(5, num_agents, p=N_list)
+    agent_classes_list[:] = np.random.choice(num_classes, num_agents, p=N_list)
     
     mean = num_levels / 2
     for i in range(num_agents):
@@ -163,13 +173,16 @@ if __name__ == '__main__':
     setup()
     print("Started... ")
     plot() #initial
-    
+
+    import time
+    start_time = time.time()
     loss = epsilon + 1
     epoch = 0
     while loss > epsilon and epoch < epoch_max:
         loss = turtle()
         print("Epoch " + str(epoch) + " Loss: " + str(loss))
         epoch += 1
-        plot()
-    
+
+    plot()
     print("Converged after " + str(epoch) + " epoches. ")
+    print("--- %s seconds ---" % (time.time() - start_time))
