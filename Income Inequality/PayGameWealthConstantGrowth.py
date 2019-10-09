@@ -10,8 +10,8 @@ Created on Thu Oct 4 12:50:31 2019
 
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 import math
+import util
 
 
 # basic settings
@@ -39,18 +39,12 @@ agent_gamma_list = np.zeros(num_agents)
 # alpha_list = [93.4, 95.8, 97, 99, 100]
 # beta_list = [3.87, 3.67, 3.67, 3.67, 4]
 # gamma_list = [2.17, 4.34, 4.34, 4.34, 1]
-
-
+#
+#
 N_list = [1]
 alpha_list = [93.4]
 beta_list = [3.87]
 gamma_list = [2.17]
-
-#Tax Brackets
-# tax_rate = [1-0,1-.32,1-.52,1-.57]
-tax_rate = [0.2]
-
-
 
 
 
@@ -64,18 +58,17 @@ s_max = 3000000.0
 epsilon = 10
 epoch_max = 100
 
-
 # === DO NOT MODIFY THIS  ===
 count_levels_list = np.zeros((num_levels, num_classes)) # number of agents by level and class
 count_levels_combined = np.zeros(num_levels) # number of all agents by level
 agent_levels_list = np.zeros(num_agents) # which level the agent is at
 agent_classes_list = np.zeros(num_agents) # which level the agent belongs to
+agent_wealth_list = np.zeros(num_agents) # Total income cumulated over time
 
 
 # level -> salary value
 def level_to_salary(x):
     return s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)
-
 
 
 # initialze global variables, including classes and parameter lists
@@ -103,6 +96,9 @@ def setup():
 
 # simulate for one round and return the least square difference of count change
 def turtle():
+
+
+
     # make a copy for later comparisons
     count_levels_combined_copy = count_levels_combined.copy()
 
@@ -113,14 +109,10 @@ def turtle():
 
     level_target_arr_plus_one = level_target_arr + 1
     level_self_arr_plus_one = level_self_arr + 1
-
     s_target_arr =np.apply_along_axis(level_to_salary, 0, level_target_arr_plus_one)
     s_self_arr =np.apply_along_axis(level_to_salary, 0, level_self_arr_plus_one)
 
     # log utility functions with out third/competition term
-
-
-
     log_utility_payoff_target_alpha = np.multiply(agent_alpha_list, np.log(s_target_arr))
     log_utility_payoff_target_beta = np.multiply(agent_beta_list, np.power(np.log(s_target_arr),2))
     log_utility_payoff_target_a_b = np.subtract(log_utility_payoff_target_alpha, log_utility_payoff_target_beta)
@@ -129,7 +121,10 @@ def turtle():
     log_utility_payoff_self_beta = np.multiply(agent_beta_list, np.power(np.log(s_self_arr), 2))
     log_utility_payoff_self_a_b = np.subtract(log_utility_payoff_self_alpha, log_utility_payoff_self_beta)
 
+    # Increase wealth by 20%
 
+    arrtmp = agent_wealth_list * 0.2
+    print(type(agent_wealth_list))
     for i in range(num_agents):
         # # pick a random level as target
         # r = random.randint(0, num_levels - 1)
@@ -146,23 +141,11 @@ def turtle():
         # s_target = level_to_salary(level_target + 1)
         # s_self = level_to_salary(level_self + 1)
 
-        level_target = level_target_arr[i]
-        level_self = level_self_arr[i]
-
-
         s_target = s_target_arr[i]
         s_self = s_self_arr[i]
 
-        # Tax
-        length_of_range = (num_levels + 1) / len(tax_rate)
-        target_tax_bracket = math.floor(level_target / length_of_range)
-        self_tax_bracket = math.floor(level_self / length_of_range)
-
-        s_target_after_tax = s_target * tax_rate[target_tax_bracket]
-        s_self_after_tax = s_self * tax_rate[self_tax_bracket]
-
-        s_target = s_target_after_tax
-        s_self = s_self_after_tax
+        level_target = level_target_arr[i]
+        level_self = level_self_arr[i]
         c = c_arr[i]
 
         # Note: agents should make decisions one by one, not all at once as
@@ -206,6 +189,9 @@ def turtle():
             count_levels_combined_copy[level_target] += 1
             agent_levels_list[i] = level_target
 
+        #Cumulate Wealth
+        agent_wealth_list[i] += s_self
+
     # calculate the least square difference of count change
     loss = sum((count_levels_combined_copy - count_levels_combined) ** 2)
 
@@ -215,23 +201,10 @@ def turtle():
     return loss
 
 
-# show the agent distributions on a plot
-def plot():
-    x = np.linspace(0, num_levels, num_levels)
-    for i in range(num_classes):
-        #plt.plot(x, count_levels_list[:, i], marker='') # just a different style
-        plt.bar(x, count_levels_list[:, i], alpha=0.45)
-
-    # Uncomment the line below to show a curve of all classes combined.
-    plt.plot(x, count_levels_combined, label="total", marker='', color='black', linewidth=0.5)
-
-    plt.show()
-
-
 if __name__ == '__main__':
     setup()
     print("Started... ")
-    plot() #initial
+    # plot() #initial
 
     import time
     start_time = time.time()
@@ -241,7 +214,8 @@ if __name__ == '__main__':
         loss = turtle()
         print("Epoch " + str(epoch) + " Loss: " + str(loss))
         epoch += 1
+    util.plot(num_levels,num_classes, count_levels_list,count_levels_combined)
+    util.plot_wealth(agent_wealth_list, "Wealth Histogram with Constant Growth One Class")
 
-    plot()
     print("Converged after " + str(epoch) + " epoches. ")
     print("--- %s seconds ---" % (time.time() - start_time))
