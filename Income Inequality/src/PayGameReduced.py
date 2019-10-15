@@ -16,7 +16,7 @@ import util
 
 # basic settings
 num_levels = 100 # number of salary levels
-num_agents = 10000
+num_agents = 1000000
 # num_classes = 5
 num_classes = 1
 # parameter init mode, either 'constant' or 'random'
@@ -97,6 +97,7 @@ def setup():
 # simulate for one round and return the least square difference of count change
 def turtle():
     # make a copy for later comparisons
+    global count_levels_combined
     count_levels_combined_copy = count_levels_combined.copy()
 
     # Generate random array
@@ -184,11 +185,12 @@ def turtle():
             agent_levels_list[i] = level_target
 
     # calculate the least square difference of count change
-    loss = sum((count_levels_combined_copy - count_levels_combined) ** 2)
+    loss = np.sum((count_levels_combined_copy - count_levels_combined) ** 2)
 
     # update state variable(s)
-    count_levels_combined[:] = count_levels_combined_copy[:]
+    # count_levels_combined[:] = count_levels_combined_copy[:]
 
+    count_levels_combined = count_levels_combined_copy
     return loss
 
 if __name__ == '__main__':
@@ -208,5 +210,8 @@ if __name__ == '__main__':
     # util.plot_wealth(count_levels_combined,"Count Levels Plot")
     util.plot(num_levels,num_classes, count_levels_list,count_levels_combined)
 
+
     print("Converged after " + str(epoch) + " epoches. ")
     print("--- %s seconds ---" % (time.time() - start_time))
+
+
