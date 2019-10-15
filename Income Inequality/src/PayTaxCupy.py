@@ -17,7 +17,7 @@ import numpy as np
 
 # basic settings
 num_levels = 100 # number of salary levels
-num_agents = 1000000
+num_agents = 100000
 # num_classes = 5
 num_classes = 1
 # parameter init mode, either 'constant' or 'random'
@@ -48,8 +48,8 @@ beta_list = [3.87]
 gamma_list = [2.17]
 
 #Tax Brackets
-tax_rate = [1-0,1-.32,1-.52,1-.57]
-# tax_rate = [1]
+# tax_rate = [1-0,1-.32,1-.52,1-.57]
+tax_rate = [.001]
 
 
 
@@ -146,18 +146,18 @@ def turtle():
 
     # log utility functions with out third/competition term
     # #Calculate after tax target
-    # length_of_range = (num_levels + 1) / len(tax_rate)
+    length_of_range = (num_levels + 1) / len(tax_rate)
     #
     #
-    # target_tax_bracket_arr = level_target_arr / length_of_range
-    # # target_tax_bracket_arr = np.floor(target_tax_bracket_arr)
-    # target_tax_bracket_arr = cp.floor(target_tax_bracket_arr)
-    #
-    #
-    #
-    # self_tax_bracket_arr = level_self_arr / length_of_range
-    # # self_tax_bracket_arr = np.floor(self_tax_bracket_arr)
-    # self_tax_bracket_arr = cp.floor(self_tax_bracket_arr)
+    target_tax_bracket_arr = level_target_arr / length_of_range
+    # target_tax_bracket_arr = np.floor(target_tax_bracket_arr)
+    target_tax_bracket_arr = cp.floor(target_tax_bracket_arr)
+
+
+
+    self_tax_bracket_arr = level_self_arr / length_of_range
+    # self_tax_bracket_arr = np.floor(self_tax_bracket_arr)
+    self_tax_bracket_arr = cp.floor(self_tax_bracket_arr)
 
 
 
@@ -165,8 +165,8 @@ def turtle():
     # s_self_tax_rate_arr = np.array(tax_rate)[self_tax_bracket_arr.astype(int)]
 
 
-    # s_target_tax_rate_arr = cp.array(tax_rate)[target_tax_bracket_arr.astype(int)]
-    # s_self_tax_rate_arr = cp.array(tax_rate)[self_tax_bracket_arr.astype(int)]
+    s_target_tax_rate_arr = cp.array(tax_rate)[target_tax_bracket_arr.astype(int)]
+    s_self_tax_rate_arr = cp.array(tax_rate)[self_tax_bracket_arr.astype(int)]
 
 
 
@@ -191,10 +191,10 @@ def turtle():
 
 
     #
-    # s_target_after_tax_arr = cp.multiply(s_target_arr, s_target_tax_rate_arr)
-    # s_self_after_tax_arr = cp.multiply(s_self_arr, s_self_tax_rate_arr)
-    # s_target_arr = s_target_after_tax_arr
-    # s_self_arr = s_self_after_tax_arr
+    s_target_after_tax_arr = cp.multiply(s_target_arr, s_target_tax_rate_arr)
+    s_self_after_tax_arr = cp.multiply(s_self_arr, s_self_tax_rate_arr)
+    s_target_arr = s_target_after_tax_arr
+    s_self_arr = s_self_after_tax_arr
 
     log_utility_payoff_target_alpha = cp.multiply(cp.asarray(agent_alpha_list), cp.log(s_target_arr))
     log_utility_payoff_target_beta = cp.multiply(cp.asarray(agent_beta_list), cp.power(np.log(s_target_arr), 2))

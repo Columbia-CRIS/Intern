@@ -47,8 +47,8 @@ beta_list = [3.87]
 gamma_list = [2.17]
 
 #Tax Brackets
-tax_rate = [1-0,1-.32,1-.52,1-.57]
-# tax_rate = [1]
+# tax_rate = [1-0,1-.32,1-.52,1-.57]
+tax_rate = [.1]
 
 
 
@@ -139,13 +139,6 @@ def turtle():
 
     s_target_tax_rate_arr = np.array(tax_rate)[target_tax_bracket_arr.astype(int)]
     s_self_tax_rate_arr = np.array(tax_rate)[self_tax_bracket_arr.astype(int)]
-
-
-
-
-
-
-
 
     s_target_after_tax_arr = np.multiply(s_target_arr, s_target_tax_rate_arr)
     s_self_after_tax_arr = np.multiply(s_self_arr,s_self_tax_rate_arr)

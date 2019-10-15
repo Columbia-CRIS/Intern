@@ -16,7 +16,7 @@ import util
 
 # basic settings
 num_levels = 100 # number of salary levels
-num_agents = 1000000
+num_agents = 100000
 # num_classes = 5
 num_classes = 1
 # parameter init mode, either 'constant' or 'random'

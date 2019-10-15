@@ -8,16 +8,17 @@ Created on Thu Oct 4 12:50:31 2019
 """
 
 
-import numpy as np
+# import numpy as np
 import matplotlib.pyplot as plt
+import random
 import math
+import cupy as cp
+import numpy as np
 import util
-import pandas as pd
-
 
 # basic settings
 num_levels = 100 # number of salary levels
-num_agents = 10000
+num_agents = 1000000
 # num_classes = 5
 num_classes = 1
 # parameter init mode, either 'constant' or 'random'
@@ -40,8 +41,8 @@ agent_gamma_list = np.zeros(num_agents)
 # alpha_list = [93.4, 95.8, 97, 99, 100]
 # beta_list = [3.87, 3.67, 3.67, 3.67, 4]
 # gamma_list = [2.17, 4.34, 4.34, 4.34, 1]
-#
-#
+
+
 N_list = [1]
 alpha_list = [93.4]
 beta_list = [3.87]
@@ -49,8 +50,10 @@ gamma_list = [2.17]
 
 #Tax Brackets
 # tax_rate = [1-0,1-.32,1-.52,1-.57]
-tax_rate = [1-.57,1-.52,1-.32,1-0]
-bins = [0,25,50,75,100]
+tax_rate = [.01]
+
+
+
 
 
 
@@ -72,9 +75,22 @@ agent_classes_list = np.zeros(num_agents) # which level the agent belongs to
 agent_wealth_list = np.zeros(num_agents) # Total income cumulated over time
 
 
+
+
+
 # level -> salary value
+@cp.fuse(kernel_name='level_to_salary')
 def level_to_salary(x):
     return s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)
+
+
+# level_to_salary = cp.ElementwiseKernel(
+#     'float32 x',
+#     'float32 z',
+#     'z = s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)',
+#     'lev_to_salary')
+
+
 
 
 # initialze global variables, including classes and parameter lists
@@ -95,6 +111,10 @@ def setup():
             agent_beta_list[i] = beta_list[c]
             agent_gamma_list[i] = gamma_list[c]
         else:
+            # agent_alpha_list[i] = np.random.normal(alpha_list[c], sigma_alpha, 1)
+            # agent_beta_list[i] = np.random.normal(beta_list[c], sigma_beta, 1)
+            # agent_gamma_list[i] = np.random.normal(gamma_list[c], sigma_gamma, 1)
+
             agent_alpha_list[i] = np.random.normal(alpha_list[c], sigma_alpha, 1)
             agent_beta_list[i] = np.random.normal(beta_list[c], sigma_beta, 1)
             agent_gamma_list[i] = np.random.normal(gamma_list[c], sigma_gamma, 1)
@@ -103,28 +123,98 @@ def setup():
 # simulate for one round and return the least square difference of count change
 def turtle():
     # make a copy for later comparisons
+    global count_levels_combined
     count_levels_combined_copy = count_levels_combined.copy()
 
     # Generate random array
-    level_target_arr = np.random.randint(0, num_levels - 1, size=num_agents)
-    level_self_arr = np.round(agent_levels_list).astype(int)
-    c_arr = np.round(agent_classes_list).astype(int)
+    # level_target_arr = np.random.randint(0, num_levels - 1, size=num_agents)
+    # level_self_arr = np.round(agent_levels_list).astype(int)
+    # c_arr = np.round(agent_classes_list).astype(int)
+
+
+    level_target_arr = cp.random.randint(0, num_levels - 1, size=num_agents)
+    level_self_arr = cp.around(agent_levels_list).astype(int)
+    c_arr = cp.around(agent_classes_list).astype(int)
 
     level_target_arr_plus_one = level_target_arr + 1
     level_self_arr_plus_one = level_self_arr + 1
-    s_target_arr =np.apply_along_axis(level_to_salary, 0, level_target_arr_plus_one)
-    s_self_arr =np.apply_along_axis(level_to_salary, 0, level_self_arr_plus_one)
+
+    # s_target_arr =np.apply_along_axis(level_to_salary, 0, level_target_arr_plus_one)
+    # s_self_arr =np.apply_along_axis(level_to_salary, 0, level_self_arr_plus_one)
+
+
+
+    s_target_arr =level_to_salary(level_target_arr_plus_one)
+    s_self_arr = level_to_salary(level_self_arr_plus_one)
 
     # log utility functions with out third/competition term
-    log_utility_payoff_target_alpha = np.multiply(agent_alpha_list, np.log(s_target_arr))
-    log_utility_payoff_target_beta = np.multiply(agent_beta_list, np.power(np.log(s_target_arr),2))
-    log_utility_payoff_target_a_b = np.subtract(log_utility_payoff_target_alpha, log_utility_payoff_target_beta)
-
-    log_utility_payoff_self_alpha = np.multiply(agent_alpha_list, np.log(s_self_arr))
-    log_utility_payoff_self_beta = np.multiply(agent_beta_list, np.power(np.log(s_self_arr), 2))
-    log_utility_payoff_self_a_b = np.subtract(log_utility_payoff_self_alpha, log_utility_payoff_self_beta)
-
+    # #Calculate after tax target
     length_of_range = (num_levels + 1) / len(tax_rate)
+    #
+    #
+    target_tax_bracket_arr = level_target_arr / length_of_range
+    # target_tax_bracket_arr = np.floor(target_tax_bracket_arr)
+    target_tax_bracket_arr = cp.floor(target_tax_bracket_arr)
+
+
+
+    self_tax_bracket_arr = level_self_arr / length_of_range
+    # self_tax_bracket_arr = np.floor(self_tax_bracket_arr)
+    self_tax_bracket_arr = cp.floor(self_tax_bracket_arr)
+
+
+
+    # s_target_tax_rate_arr = np.array(tax_rate)[target_tax_bracket_arr.astype(int)]
+    # s_self_tax_rate_arr = np.array(tax_rate)[self_tax_bracket_arr.astype(int)]
+
+
+    s_target_tax_rate_arr = cp.array(tax_rate)[target_tax_bracket_arr.astype(int)]
+    s_self_tax_rate_arr = cp.array(tax_rate)[self_tax_bracket_arr.astype(int)]
+
+
+
+
+
+
+    # s_target_after_tax_arr = np.multiply(s_target_arr, s_target_tax_rate_arr)
+    # s_self_after_tax_arr = np.multiply(s_self_arr,s_self_tax_rate_arr)
+    # s_target_arr = s_target_after_tax_arr
+    # s_self_arr =s_self_after_tax_arr
+    #
+    #
+    #
+    # log_utility_payoff_target_alpha = np.multiply(agent_alpha_list, np.log(s_target_arr))
+    # log_utility_payoff_target_beta = np.multiply(agent_beta_list, np.power(np.log(s_target_arr),2))
+    # log_utility_payoff_target_a_b = np.subtract(log_utility_payoff_target_alpha, log_utility_payoff_target_beta)
+    #
+    # log_utility_payoff_self_alpha = np.multiply(agent_alpha_list, np.log(s_self_arr))
+    # log_utility_payoff_self_beta = np.multiply(agent_beta_list, np.power(np.log(s_self_arr), 2))
+    # log_utility_payoff_self_a_b = np.subtract(log_utility_payoff_self_alpha, log_utility_payoff_self_beta)
+
+
+
+    #
+    s_target_after_tax_arr = cp.multiply(s_target_arr, s_target_tax_rate_arr)
+    s_self_after_tax_arr = cp.multiply(s_self_arr, s_self_tax_rate_arr)
+    s_target_arr = s_target_after_tax_arr
+    s_self_arr = s_self_after_tax_arr
+
+    log_utility_payoff_target_alpha = cp.multiply(cp.asarray(agent_alpha_list), cp.log(s_target_arr))
+    log_utility_payoff_target_beta = cp.multiply(cp.asarray(agent_beta_list), cp.power(np.log(s_target_arr), 2))
+    log_utility_payoff_target_a_b = cp.subtract(log_utility_payoff_target_alpha, log_utility_payoff_target_beta)
+
+    log_utility_payoff_self_alpha = cp.multiply(cp.asarray(agent_alpha_list), cp.log(s_self_arr))
+    log_utility_payoff_self_beta = cp.multiply(cp.asarray(agent_beta_list), cp.power(np.log(s_self_arr), 2))
+    log_utility_payoff_self_a_b = cp.subtract(log_utility_payoff_self_alpha, log_utility_payoff_self_beta)
+
+
+    level_target_arr   = cp.asnumpy(level_target_arr)
+    level_self_arr  = cp.asnumpy(level_self_arr)
+    s_target_arr  = cp.asnumpy(s_target_arr)
+    s_self_arr  = cp.asnumpy(s_self_arr)
+    c_arr  = cp.asnumpy(c_arr)
+    log_utility_payoff_target_a_b  = cp.asnumpy(log_utility_payoff_target_a_b)
+    log_utility_payoff_self_a_b  = cp.asnumpy(log_utility_payoff_self_a_b)
 
     for i in range(num_agents):
         # # pick a random level as target
@@ -141,30 +231,31 @@ def turtle():
         # # calculate salaries
         # s_target = level_to_salary(level_target + 1)
         # s_self = level_to_salary(level_self + 1)
+
         level_target = level_target_arr[i]
         level_self = level_self_arr[i]
+
 
         s_target = s_target_arr[i]
         s_self = s_self_arr[i]
 
+        # Tax
+        # length_of_range = (num_levels + 1) / len(tax_rate)
+        # target_tax_bracket = math.floor(level_target / length_of_range)
+        # self_tax_bracket = math.floor(level_self / length_of_range)
 
+        # s_target_after_tax = s_target * tax_rate[target_tax_bracket]
+        # s_self_after_tax = s_self * tax_rate[self_tax_bracket]
+        #
+        # s_target = s_target_after_tax
+        # s_self = s_self_after_tax
         c = c_arr[i]
-
-        #Tax
-        target_tax_bracket = math.floor(level_target/length_of_range)
-        self_tax_bracket = math.floor(level_self/length_of_range)
-
-        s_target_after_tax = s_target * tax_rate[target_tax_bracket]
-        s_self_after_tax = s_self * tax_rate[self_tax_bracket]
-
-
-        s_target = s_target_after_tax
-        s_self = s_self_after_tax
 
         # Note: agents should make decisions one by one, not all at once as
         # previously programmed. Otherwise, the program will produce wrong
         # results. Thus, we use count_levels_combined_copy instead of
         # count_levels_combined.
+
         num_target = count_levels_combined_copy[level_target]
         num_self = count_levels_combined_copy[level_self]
 
@@ -201,17 +292,30 @@ def turtle():
             count_levels_list[level_target, c] += 1
             count_levels_combined_copy[level_target] += 1
             agent_levels_list[i] = level_target
-
-        #Cumulate Wealth
         agent_wealth_list[i] += s_self
 
+
     # calculate the least square difference of count change
-    loss = sum((count_levels_combined_copy - count_levels_combined) ** 2)
+    loss = np.sum((count_levels_combined_copy - count_levels_combined) ** 2)
 
     # update state variable(s)
-    count_levels_combined[:] = count_levels_combined_copy[:]
-
+    # count_levels_combined[:] = count_levels_combined_copy[:]
+    count_levels_combined = count_levels_combined_copy
     return loss
+
+
+# show the agent distributions on a plot
+def plot():
+    x = np.linspace(0, num_levels, num_levels)
+    for i in range(num_classes):
+        #plt.plot(x, count_levels_list[:, i], marker='') # just a different style
+        plt.bar(x, count_levels_list[:, i], alpha=0.45)
+
+    # Uncomment the line below to show a curve of all classes combined.
+    plt.plot(x, count_levels_combined, label="total", marker='', color='black', linewidth=0.5)
+
+    plt.show()
+
 
 if __name__ == '__main__':
     setup()
@@ -226,8 +330,11 @@ if __name__ == '__main__':
         loss = turtle()
         print("Epoch " + str(epoch) + " Loss: " + str(loss))
         epoch += 1
-    util.plot_wealth(agent_wealth_list, "Wealth - Tax Histogram")
+        if (epoch % 5 ==0):
+            util.plot_wealth_save(agent_wealth_list, "Wealth 99% single tax 1M - Histogram" + str(epoch))
+            # util.plot_save(num_levels, num_classes, count_levels_list, count_levels_combined,"Income 99% single tax 1M - Histogram" + str(epoch))
 
 
+    plot()
     print("Converged after " + str(epoch) + " epoches. ")
     print("--- %s seconds ---" % (time.time() - start_time))
