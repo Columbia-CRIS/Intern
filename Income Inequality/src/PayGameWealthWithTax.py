@@ -18,7 +18,7 @@ import util
 
 # basic settings
 num_levels = 100 # number of salary levels
-num_agents = 1000000
+num_agents = 100000
 # num_classes = 5
 num_classes = 1
 # parameter init mode, either 'constant' or 'random'
@@ -69,10 +69,11 @@ count_levels_combined = np.zeros(num_levels) # number of all agents by level
 agent_levels_list = np.zeros(num_agents) # which level the agent is at
 agent_classes_list = np.zeros(num_agents) # which level the agent belongs to
 agent_wealth_list = np.zeros(num_agents)
+agent_income_list = np.zeros(num_agents)
 
 # level -> salary value
-# def level_to_salary(x):
-#     return s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)
+def level_to_salary_euqal_likely(x):
+    return s_min + (s_max - s_min) / (num_levels - 1) * (x - 1)
 
 
 def level_to_salary(x):
@@ -236,6 +237,7 @@ def turtle():
             count_levels_combined_copy[level_target] += 1
             agent_levels_list[i] = level_target
         agent_wealth_list[i] += s_self
+        agent_income_list[i] = s_self
     # calculate the least square difference of count change
     loss = sum((count_levels_combined_copy - count_levels_combined) ** 2)
 
@@ -271,11 +273,15 @@ if __name__ == '__main__':
         loss = turtle()
         print("Epoch " + str(epoch) + " Loss: " + str(loss))
         epoch += 1
-        if (epoch < 5 or epoch %5 == 0):
-            util.plot_wealth_save(agent_wealth_list, "Wealth -overlay -no tax -1M -Danish Income" + str(epoch))
-            util.plot_save(num_levels, num_classes, count_levels_list, count_levels_combined,"Income -overlay -no tax -1M -Danish Income" + str(epoch))
+        if (epoch > 5):
+            level_to_salary = level_to_salary_euqal_likely
+        if (epoch == 4):
 
-
-    plot()
+            print(util.best_fit_distribution(agent_income_list))
+        # if (epoch < 5 or epoch %5 == 0):
+            # plot()
+            # util.plot_wealth_save(agent_wealth_list, "Wealth -overlay -no tax -100k -Start with Danish Income" + str(epoch))
+            # util.plot_save(num_levels, num_classes, count_levels_list, count_levels_combined,"Income -overlay -no tax -100k -Start with Danish Income" + str(epoch))
+    # plot()
     print("Converged after " + str(epoch) + " epoches. ")
     print("--- %s seconds ---" % (time.time() - start_time))

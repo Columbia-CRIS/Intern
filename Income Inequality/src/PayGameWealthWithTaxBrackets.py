@@ -18,7 +18,7 @@ import util
 
 # basic settings
 num_levels = 100 # number of salary levels
-num_agents = 1000000
+num_agents = 100000
 # num_classes = 5
 num_classes = 1
 # parameter init mode, either 'constant' or 'random'
@@ -245,11 +245,12 @@ if __name__ == '__main__':
         loss = turtle()
         print("Epoch " + str(epoch) + " Loss: " + str(loss))
         epoch += 1
-        if (epoch < 5 or epoch %5 == 0):
-            util.plot_wealth_save(agent_wealth_list, "Wealth -nooverlay -danish tax -1M -Danish Income" + str(epoch))
-            util.plot_save(num_levels, num_classes, count_levels_list, count_levels_combined,"Income -nooverlay -danish tax -1M -Danish Income" + str(epoch))
+        # if (epoch < 5 or epoch %5 == 0):
+            # util.plot_wealth_save(agent_wealth_list, "Wealth -nooverlay -danish tax -1M -Danish Income" + str(epoch))
+            # util.plot_save(num_levels, num_classes, count_levels_list, count_levels_combined,"Income -nooverlay -danish tax -1M -Danish Income" + str(epoch))
 
 
     plot()
+    util.best_fit_distribution(agent_wealth_list)
     print("Converged after " + str(epoch) + " epoches. ")
     print("--- %s seconds ---" % (time.time() - start_time))
