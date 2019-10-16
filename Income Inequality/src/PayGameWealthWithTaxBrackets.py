@@ -49,8 +49,11 @@ beta_list = [3.87]
 gamma_list = [2.17]
 
 #Tax Brackets
-# tax_rate = [1-0,1-.32,1-.52,1-.57]
-tax_rate = [1]
+# tax_rate = [.08,.41,.56]
+# taxable_basis = [0,46200,558043]
+
+
+
 
 
 
@@ -76,7 +79,7 @@ agent_wealth_list = np.zeros(num_agents)
 
 
 def level_to_salary(x):
-    return np.asarray(util.danmark_income).astype(float)[x]
+    return np.asarray(util.danmark_after_tax_income).astype(float)[x]
 
 
 
@@ -121,31 +124,6 @@ def turtle():
     s_target_arr =np.apply_along_axis(level_to_salary, 0, level_target_arr_plus_one)
     s_self_arr =np.apply_along_axis(level_to_salary, 0, level_self_arr_plus_one)
 
-
-
-
-    # log utility functions with out third/competition term
-    #Calculate after tax target
-    length_of_range = (num_levels + 1) / len(tax_rate)
-
-
-    target_tax_bracket_arr = level_target_arr / length_of_range
-    target_tax_bracket_arr = np.floor(target_tax_bracket_arr)
-
-    self_tax_bracket_arr = level_self_arr / length_of_range
-    self_tax_bracket_arr = np.floor(self_tax_bracket_arr)
-
-
-
-    s_target_tax_rate_arr = np.array(tax_rate)[target_tax_bracket_arr.astype(int)]
-    s_self_tax_rate_arr = np.array(tax_rate)[self_tax_bracket_arr.astype(int)]
-    s_target_after_tax_arr = np.multiply(s_target_arr, s_target_tax_rate_arr)
-    s_self_after_tax_arr = np.multiply(s_self_arr,s_self_tax_rate_arr)
-    s_target_arr = s_target_after_tax_arr
-    s_self_arr =s_self_after_tax_arr
-
-
-
     log_utility_payoff_target_alpha = np.multiply(agent_alpha_list, np.log(s_target_arr))
     log_utility_payoff_target_beta = np.multiply(agent_beta_list, np.power(np.log(s_target_arr),2))
     log_utility_payoff_target_a_b = np.subtract(log_utility_payoff_target_alpha, log_utility_payoff_target_beta)
@@ -153,10 +131,6 @@ def turtle():
     log_utility_payoff_self_alpha = np.multiply(agent_alpha_list, np.log(s_self_arr))
     log_utility_payoff_self_beta = np.multiply(agent_beta_list, np.power(np.log(s_self_arr), 2))
     log_utility_payoff_self_a_b = np.subtract(log_utility_payoff_self_alpha, log_utility_payoff_self_beta)
-
-
-
-
 
 
 
@@ -272,8 +246,8 @@ if __name__ == '__main__':
         print("Epoch " + str(epoch) + " Loss: " + str(loss))
         epoch += 1
         if (epoch < 5 or epoch %5 == 0):
-            util.plot_wealth_save(agent_wealth_list, "Wealth -overlay -no tax -1M -Danish Income" + str(epoch))
-            util.plot_save(num_levels, num_classes, count_levels_list, count_levels_combined,"Income -overlay -no tax -1M -Danish Income" + str(epoch))
+            util.plot_wealth_save(agent_wealth_list, "Wealth -nooverlay -danish tax -1M -Danish Income" + str(epoch))
+            util.plot_save(num_levels, num_classes, count_levels_list, count_levels_combined,"Income -nooverlay -danish tax -1M -Danish Income" + str(epoch))
 
 
     plot()
